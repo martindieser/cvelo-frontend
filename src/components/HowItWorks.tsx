@@ -1,27 +1,27 @@
 const steps = [
   {
     num: "1.",
-    title: "Upload your current resume",
+    title: "Sube tu currículum actual",
     image: "https://jobowl.co/old_profile.png",
   },
   {
     num: "2.",
-    title: "Provide the job description",
+    title: "Pega la descripción del puesto",
     image: "https://jobowl.co/li_job.png",
   },
   {
     num: "3.",
-    title: "JobOwl generates a tailored resume",
-    subtitle: "JobOwl generates a resume tailored to the job requirements",
+    title: "CurriAI genera un CV adaptado",
+    subtitle: "CurriAI genera un currículum optimizado para los requisitos del puesto",
     image: "https://jobowl.co/sample_resume.png",
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section className="bg-lavender py-20 px-4">
+    <section className="bg-white py-20 px-4 border-b border-border">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">How JobOwl works</h2>
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Cómo funciona CurriAI</h2>
         <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center">
           {steps.map((step) => (
             <div key={step.num} className="flex items-center gap-2">
@@ -34,7 +34,7 @@ const HowItWorks = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step) => (
-            <div key={step.num} className="bg-card rounded-xl overflow-hidden shadow-lg border">
+            <div key={step.num} className="bg-card rounded-xl overflow-hidden shadow-sm border border-border">
               <img src={step.image} alt={step.title} className="w-full h-auto" loading="lazy" />
             </div>
           ))}

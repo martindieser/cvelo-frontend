@@ -7,51 +7,51 @@ import {
 
 const faqs = [
   {
-    q: "How does JobOwl help me get more job interviews?",
-    a: "JobOwl creates a job-specific version of your resume by analyzing the job description and then tailoring what recruiters care about most: your most relevant skills, your strongest matching experience, and clear, role-aligned achievements. It also adds important keywords naturally and keeps formatting clean (including ATS-friendly structure).",
+    q: "¿Cómo me ayuda CurriAI a conseguir más entrevistas?",
+    a: "CurriAI crea una versión de tu currículum específica para cada puesto analizando la descripción de la oferta y destacando lo que más les importa a los reclutadores: tus habilidades más relevantes, tu experiencia más sólida y tus logros alineados con el rol. También añade palabras clave de forma natural y mantiene una estructura limpia (compatible con ATS).",
   },
   {
-    q: 'What do you mean by "tailoring" a resume?',
-    a: "Tailoring means aligning your resume to a specific role—without making anything up. JobOwl can reorder skills, rewrite bullet points to better reflect the job's outcomes, highlight the most relevant projects, and incorporate key phrases from the job description.",
+    q: "¿Qué significa 'adaptar' un currículum?",
+    a: "Adaptar significa alinear tu CV con un puesto específico, sin inventar nada. CurriAI puede reordenar habilidades, reescribir puntos de experiencia para reflejar mejor los resultados buscados, resaltar los proyectos más relevantes e incorporar frases clave de la descripción del trabajo.",
   },
   {
-    q: "Does JobOwl work in other languages?",
-    a: "Yes. JobOwl detects the language of the job post and tailors accordingly, and it should work well for all commonly spoken languages.",
+    q: "¿CurriAI funciona en otros idiomas?",
+    a: "Sí. CurriAI detecta el idioma de la oferta de trabajo y adapta tu CV en consecuencia. Funciona correctamente para los idiomas más hablados.",
   },
   {
-    q: "Will JobOwl change my experience or add fake claims?",
-    a: "No. JobOwl is designed to present your real experience more clearly for the role you're targeting. It improves phrasing, structure, and emphasis—but it shouldn't invent achievements. You stay in control and can edit any generated resume.",
+    q: "¿CurriAI cambiará mi experiencia o añadirá información falsa?",
+    a: "No. CurriAI está diseñado para presentar tu experiencia real de forma más clara para el puesto que buscas. Mejora la redacción, estructura y énfasis, pero no inventa logros. Tú siempre tienes el control y puedes editar el CV generado.",
   },
   {
-    q: "Do I need to paste a job description every time?",
-    a: "For best results, yes—because each role prioritizes different skills and outcomes. Pasting the job description lets JobOwl tailor the resume to that exact posting.",
+    q: "¿Necesito pegar una descripción de trabajo cada vez?",
+    a: "Para obtener los mejores resultados, sí, porque cada puesto prioriza habilidades y resultados diferentes. Pegar la descripción permite a CurriAI adaptar el currículum exactamente a esa oferta.",
   },
   {
-    q: "What is an ATS, and how does JobOwl help deal with it?",
-    a: "An Applicant Tracking System (ATS) is software many companies use to collect and screen applications. JobOwl uses ATS-friendly templates and clean formatting, so your resume is easier to parse.",
+    q: "¿Qué es un ATS y cómo ayuda CurriAI?",
+    a: "Un ATS (Sistema de Seguimiento de Candidatos) es un software que muchas empresas usan para filtrar solicitudes. CurriAI utiliza plantillas amigables para ATS y un formato limpio, para que tu CV sea fácil de procesar por estos sistemas.",
   },
   {
-    q: "Will my resume sound robotic?",
-    a: "No. JobOwl aims for natural, recruiter-friendly language. It keeps your content readable while improving clarity and relevance.",
+    q: "¿Mi CV sonará robótico?",
+    a: "No. CurriAI busca un lenguaje natural y profesional. Mantiene tu contenido legible mientras mejora la claridad y relevancia para el reclutador.",
   },
   {
-    q: "How long does it take to generate a tailored resume?",
-    a: "Typically under a minute. Upload your resume, provide the job description, and JobOwl generates a tailored version quickly.",
+    q: "¿Cuánto tiempo tarda en generarse un CV adaptado?",
+    a: "Normalmente menos de un minuto. Subes tu currículum, pegas la descripción del puesto y CurriAI genera la versión adaptada rápidamente.",
   },
   {
-    q: "Can I use JobOwl for different roles and industries?",
-    a: "Yes. JobOwl works across industries (tech, marketing, finance, operations, healthcare, and more). Because it tailors to the job description, it adapts to role-specific terminology.",
+    q: "¿Puedo usar CurriAI para diferentes sectores e industrias?",
+    a: "Sí. CurriAI funciona en todos los sectores (tecnología, marketing, finanzas, operaciones, salud y más). Al adaptarse a la descripción del puesto, utiliza la terminología específica de cada industria.",
   },
 ];
 
 const FAQSection = () => {
   return (
-    <section className="py-20 px-4">
+    <section className="py-20 px-4 bg-white">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Frequently asked questions</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Preguntas Frecuentes</h2>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="border rounded-lg px-4">
+            <AccordionItem key={i} value={`faq-${i}`} className="border border-border rounded-lg px-4">
               <AccordionTrigger className="text-left font-semibold text-sm py-4">{faq.q}</AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground pb-4">{faq.a}</AccordionContent>
             </AccordionItem>
