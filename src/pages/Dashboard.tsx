@@ -140,7 +140,7 @@ const Dashboard = () => {
           <DialogHeader className="pb-2">
             <DialogTitle className="text-xl font-black text-center">Comprar Créditos</DialogTitle>
           </DialogHeader>
-          <BuyCredits />
+          <BuyCredits onClose={() => setIsPricingOpen(false)} />
         </DialogContent>
       </Dialog>
 

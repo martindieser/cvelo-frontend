@@ -1,20 +1,26 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import logoMascot from "@/assets/logo-mascot.svg";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
+  const { isAuthenticated } = useAuth();
 
   const handleRegisterSuccess = (email: string) => {
     setRegisteredEmail(email);
     setIsRegistered(true);
   };
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   if (isRegistered) {
     return (

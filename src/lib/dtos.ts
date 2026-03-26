@@ -24,3 +24,25 @@ export interface AuthResponseDTO {
     available_credits: number;
   };
 }
+
+// --- Payment & Checkout DTOs ---
+
+export interface CreateCheckoutRequestDTO {
+  pack_id: string;
+}
+
+export interface CheckoutResponseDTO {
+  id: string;
+  invoice_url: string;
+  qr_code?: string; // Base64 or image URL
+  amount: number;
+  currency: string;
+}
+
+export type PaymentStatus = "pending" | "paid" | "failed" | "expired";
+
+export interface PaymentStatusDTO {
+  id: string;
+  status: PaymentStatus;
+  credits_awarded?: number;
+}

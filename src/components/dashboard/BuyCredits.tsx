@@ -3,21 +3,153 @@ import {
   CreditCard, 
   Plus, 
   Minus, 
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  ArrowLeft,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { usePayment } from "@/hooks/usePayment";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
-const BuyCredits = () => {
+interface BuyCreditsProps {
+  onClose?: () => void;
+}
+
+const BuyCredits = ({ onClose }: BuyCreditsProps) => {
   const [amount, setAmount] = useState(1);
+  const { status, checkoutInfo, createPayment, resetPayment } = usePayment();
+  const { updateProfile } = useUserProfile();
+  
   const pricePerCredit = 3000;
   const totalPrice = amount * pricePerCredit;
+
+  const handleSuccess = () => {
+    resetPayment();
+    if (onClose) onClose();
+  };
 
   const increment = () => amount < 10 && setAmount(amount + 1);
   const decrement = () => amount > 1 && setAmount(amount - 1);
 
+  const handlePayment = async () => {
+    await createPayment(amount.toString());
+  };
+
+  if (status === "creating") {
+    return <LoadingScreen fullScreen={false} message="Iniciando pago" />;
+  }
+
+  if (status === "awaiting_payment") {
+    return (
+      <div className="flex flex-col items-center justify-center py-4 space-y-6 animate-in fade-in zoom-in-95 duration-300">
+        <div className="text-center space-y-1">
+          <h3 className="text-lg font-black tracking-tight">Escanea para pagar</h3>
+          <p className="text-xs text-muted-foreground font-medium">Usa tu app de banco o Mercado Pago</p>
+        </div>
+
+        {/* QR CONTAINER WITH SCANNING ANIMATION */}
+        <div className="relative p-4 bg-white rounded-3xl shadow-xl border border-border group overflow-hidden">
+          <div className="w-48 h-48 relative z-10">
+            <img 
+              src={checkoutInfo?.qr_code} 
+              alt="QR Code" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+          {/* Animated Scanning Line */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.5)] animate-scan-line z-20 pointer-events-none" />
+          
+          {/* Decorative Corners */}
+          <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-primary/40 rounded-tl-lg" />
+          <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-primary/40 rounded-tr-lg" />
+          <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-primary/40 rounded-bl-lg" />
+          <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-primary/40 rounded-br-lg" />
+        </div>
+
+        <div className="flex flex-col items-center gap-3 w-full">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            Verificando pago...
+          </div>
+
+          <div className="pt-4 w-full border-t border-dashed border-border flex flex-col items-center gap-2">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">¿No puedes escanear?</p>
+            <Button 
+              variant="outline" 
+              className="w-full rounded-xl font-bold gap-2 text-sm border-2 hover:bg-primary/5 hover:border-primary/20 transition-all h-11"
+              onClick={() => window.open(checkoutInfo?.invoice_url, "_blank")}
+            >
+              <ExternalLink className="w-4 h-4" />
+              Pagar en el navegador
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground font-bold rounded-xl mt-1" onClick={resetPayment}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+
+        <style>{`
+          @keyframes scan {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(224px); opacity: 0; }
+          }
+          .animate-scan-line {
+            animation: scan 3s linear infinite;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (status === "success") {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+          <CheckCircle2 className="w-12 h-12" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-black tracking-tight">¡Pago acreditado!</h3>
+          <p className="text-sm text-muted-foreground font-medium">
+            Tus {amount} créditos han sido añadidos exitosamente.
+          </p>
+        </div>
+        <Button className="rounded-xl font-bold w-full" onClick={handleSuccess}>
+          ¡Genial!
+        </Button>
+      </div>
+    );
+  }
+
+  if (status === "error" || status === "expired") {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 space-y-6 text-center animate-in fade-in zoom-in-95">
+        <div className="w-20 h-20 bg-destructive/10 rounded-full flex items-center justify-center text-destructive">
+          <AlertCircle className="w-12 h-12" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-black tracking-tight">Algo salió mal</h3>
+          <p className="text-sm text-muted-foreground font-medium">
+            {status === "expired" 
+              ? "El tiempo de espera se ha agotado." 
+              : "No pudimos procesar tu pago. Por favor, intenta de nuevo."}
+          </p>
+        </div>
+        <Button variant="outline" className="rounded-xl font-bold w-full gap-2" onClick={resetPayment}>
+          <ArrowLeft className="w-4 h-4" /> Volver a intentar
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 py-1">
+    <div className="space-y-6 py-1 animate-in fade-in duration-300">
       <div className="flex flex-col items-center justify-center space-y-5">
         <div className="flex items-center gap-5">
           <Button 
@@ -70,9 +202,12 @@ const BuyCredits = () => {
       </div>
       
       <div className="space-y-3">
-        <Button className="w-full py-5 rounded-xl font-bold text-base gap-2.5 shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.99] h-auto bg-primary hover:bg-primary/90">
+        <Button 
+          onClick={handlePayment}
+          className="w-full py-5 rounded-xl font-bold text-base gap-2.5 shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.99] h-auto bg-primary hover:bg-primary/90"
+        >
           <CreditCard className="w-4 h-4" />
-          Pagar con Mercado Pago
+          Comprar con Mercado Pago
         </Button>
         
         <div className="flex items-center justify-center gap-1.5 text-[9px] text-muted-foreground uppercase tracking-widest font-bold">
