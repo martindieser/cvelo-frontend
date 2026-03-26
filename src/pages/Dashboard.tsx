@@ -9,6 +9,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ResumePreview from "@/components/dashboard/ResumePreview";
@@ -17,11 +23,13 @@ import TailorCV from "@/components/dashboard/TailorCV";
 import PersonalInfo from "@/components/dashboard/PersonalInfo";
 import MyDocuments from "@/components/dashboard/MyDocuments";
 import Settings from "@/components/dashboard/Settings";
+import BuyCredits from "@/components/dashboard/BuyCredits";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("tailor");
   const [jobName, setJobName] = useState("Mercado Libre");
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isTailored, setIsTailored] = useState(false);
 
   const handleAdaptCV = (description: string) => {
@@ -48,7 +56,11 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
       {/* SIDEBAR (Desktop fixed, Mobile hidden + Sheet) */}
-      <DashboardSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <DashboardSidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onPricingClick={() => setIsPricingOpen(true)}
+      />
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-muted/20">
@@ -93,6 +105,16 @@ const Dashboard = () => {
           <div className="h-20 lg:hidden" />
         </div>
       </main>
+
+      {/* PRICING DIALOG - Ahora más chiquito y discreto */}
+      <Dialog open={isPricingOpen} onOpenChange={setIsPricingOpen}>
+        <DialogContent className="rounded-3xl w-[90vw] max-w-[360px] p-6 shadow-2xl">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-xl font-black text-center">Comprar Créditos</DialogTitle>
+          </DialogHeader>
+          <BuyCredits />
+        </DialogContent>
+      </Dialog>
 
       {/* SHARED DIALOGS */}
       <AlertDialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>

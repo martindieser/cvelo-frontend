@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { 
   LayoutDashboard, 
   User, 
@@ -16,9 +15,10 @@ import logoMascot from "@/assets/logo-mascot.svg";
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onPricingClick?: () => void;
 }
 
-export const SidebarContent = ({ activeTab, setActiveTab }: SidebarProps) => (
+export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => (
   <div className="flex flex-col h-full">
     <div className="p-6 flex justify-center">
       <Link to="/" className="group">
@@ -29,7 +29,10 @@ export const SidebarContent = ({ activeTab, setActiveTab }: SidebarProps) => (
     </div>
 
     <div className="px-4 mb-4">
-      <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl py-6 shadow-md shadow-primary/20">
+      <Button 
+        onClick={onPricingClick}
+        className="w-full justify-start gap-2 bg-primary/90 hover:bg-primary text-primary-foreground font-bold rounded-xl py-6 shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+      >
         <Sparkles className="w-4 h-4" />
         <span>Plan Pro Ilimitado</span>
       </Button>
@@ -85,12 +88,12 @@ export const SidebarContent = ({ activeTab, setActiveTab }: SidebarProps) => (
   </div>
 );
 
-const DashboardSidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
+const DashboardSidebar = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => {
   return (
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 bg-card border-r border-border flex-col shrink-0 h-full">
-        <SidebarContent activeTab={activeTab} setActiveTab={setActiveTab} />
+        <SidebarContent activeTab={activeTab} setActiveTab={setActiveTab} onPricingClick={onPricingClick} />
       </aside>
 
       {/* Mobile Menu Button (Floating or Integrated) */}
@@ -102,7 +105,7 @@ const DashboardSidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-72 border-r-border">
-            <SidebarContent activeTab={activeTab} setActiveTab={setActiveTab} />
+            <SidebarContent activeTab={activeTab} setActiveTab={setActiveTab} onPricingClick={onPricingClick} />
           </SheetContent>
         </Sheet>
       </div>
