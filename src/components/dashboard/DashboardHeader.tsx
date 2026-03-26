@@ -10,9 +10,14 @@ import {
 
 interface HeaderProps {
   onAvatarClick: () => void;
+  activeTab: string;
+  isTailored: boolean;
+  onNewAdapt: () => void;
 }
 
-const DashboardHeader = ({ onAvatarClick }: HeaderProps) => {
+const DashboardHeader = ({ onAvatarClick, activeTab, isTailored, onNewAdapt }: HeaderProps) => {
+  const showAdaptButton = activeTab !== "tailor" || isTailored;
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0 relative z-40">
       <div className="flex items-center gap-2 lg:gap-4">
@@ -22,11 +27,17 @@ const DashboardHeader = ({ onAvatarClick }: HeaderProps) => {
       </div>
       
       <div className="flex items-center gap-2 lg:gap-3">
-        <Button size="sm" className="gap-2 rounded-full px-3 lg:px-5 font-bold h-9 lg:h-10 text-xs lg:text-sm">
-          <Plus className="w-3.5 h-3.5 lg:w-4 h-4" /> 
-          <span className="hidden sm:inline">Adaptar nuevo CV</span>
-          <span className="sm:hidden">Nuevo</span>
-        </Button>
+        {showAdaptButton && (
+          <Button 
+            size="sm" 
+            onClick={onNewAdapt}
+            className="gap-2 rounded-full px-3 lg:px-5 font-bold h-9 lg:h-10 text-xs lg:text-sm animate-in fade-in zoom-in-95 duration-200"
+          >
+            <Plus className="w-3.5 h-3.5 lg:w-4 h-4" /> 
+            <span className="hidden sm:inline">Adaptar nuevo CV</span>
+            <span className="sm:hidden">Nuevo</span>
+          </Button>
+        )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

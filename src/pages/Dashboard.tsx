@@ -40,6 +40,11 @@ const Dashboard = () => {
     setIsTailored(false);
   };
 
+  const handleNewAdapt = () => {
+    setIsTailored(false);
+    setActiveTab("tailor");
+  };
+
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
       {/* SIDEBAR (Desktop fixed, Mobile hidden + Sheet) */}
@@ -47,7 +52,12 @@ const Dashboard = () => {
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-muted/20">
-        <DashboardHeader onAvatarClick={() => setIsAvatarDialogOpen(true)} />
+        <DashboardHeader 
+          onAvatarClick={() => setIsAvatarDialogOpen(true)} 
+          activeTab={activeTab}
+          isTailored={isTailored}
+          onNewAdapt={handleNewAdapt}
+        />
 
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-8">
