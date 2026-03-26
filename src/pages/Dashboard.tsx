@@ -15,6 +15,7 @@ import ResumePreview from "@/components/dashboard/ResumePreview";
 import InsightsPanel from "@/components/dashboard/InsightsPanel";
 import TailorCV from "@/components/dashboard/TailorCV";
 import PersonalInfo from "@/components/dashboard/PersonalInfo";
+import MyDocuments from "@/components/dashboard/MyDocuments";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("tailor");
@@ -26,6 +27,16 @@ const Dashboard = () => {
     // Aquí iría la lógica de llamada a la API o procesamiento
     console.log("Adaptando CV con descripción:", description);
     setIsTailored(true);
+  };
+
+  const handleViewDocument = (doc: any) => {
+    setJobName(doc.companyName);
+    setIsTailored(true);
+    setActiveTab("tailor");
+  };
+
+  const handleBackToTailor = () => {
+    setIsTailored(false);
   };
 
   return (
@@ -47,7 +58,7 @@ const Dashboard = () => {
               ) : (
                 <>
                   {/* CENTRAL RESUME VIEW */}
-                  <ResumePreview jobName={jobName} />
+                  <ResumePreview jobName={jobName} onBack={handleBackToTailor} />
 
                   {/* RIGHT PANEL (Desktop sidebar, Mobile bottom sheet) */}
                   <InsightsPanel />
@@ -55,6 +66,8 @@ const Dashboard = () => {
               )
             ) : activeTab === "info" ? (
               <PersonalInfo />
+            ) : activeTab === "docs" ? (
+              <MyDocuments onView={handleViewDocument} />
             ) : (
               <div className="flex-1 flex items-center justify-center h-[60vh] text-muted-foreground border-2 border-dashed border-border rounded-3xl">
                 Sección {activeTab} en desarrollo...

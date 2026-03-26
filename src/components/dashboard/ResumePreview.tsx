@@ -12,13 +12,17 @@ import { InsightsContent } from "./InsightsPanel";
 
 interface ResumePreviewProps {
   jobName: string;
+  onBack: () => void;
 }
 
-const ResumePreview = ({ jobName }: ResumePreviewProps) => {
+const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <button className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0">
+        <button 
+          onClick={onBack}
+          className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
+        >
           <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Volver a la lista</span>
         </button>
         
