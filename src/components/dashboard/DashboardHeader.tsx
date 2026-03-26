@@ -1,4 +1,4 @@
-import { Plus, User } from "lucide-react";
+import { Plus, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -7,6 +7,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 interface HeaderProps {
   onAvatarClick: () => void;
@@ -16,14 +17,28 @@ interface HeaderProps {
 }
 
 const DashboardHeader = ({ onAvatarClick, activeTab, isTailored, onNewAdapt }: HeaderProps) => {
+  const { profile, loading } = useUserProfile();
   const showAdaptButton = activeTab !== "tailor" || isTailored;
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0 relative z-40">
       <div className="flex items-center gap-2 lg:gap-4">
-        <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold px-3 lg:px-4 py-1.5 rounded-full text-[10px] lg:text-sm whitespace-nowrap">
-          Créditos: 2
-        </Badge>
+        {loading ? (
+          <div className="h-8 w-24 bg-muted animate-pulse rounded-full" />
+        ) : (
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold px-3 lg:px-4 py-1.5 rounded-full text-[10px] lg:text-sm whitespace-nowrap">
+            Créditos: {profile?.credits ?? 0}
+          </Badge>
+        )}
       </div>
       
       <div className="flex items-center gap-2 lg:gap-3">
@@ -41,8 +56,14 @@ const DashboardHeader = ({ onAvatarClick, activeTab, isTailored, onNewAdapt }: H
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm border border-primary/20 cursor-pointer hover:bg-primary/30 transition-colors outline-none shrink-0">
-              JD
+            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm border border-primary/20 cursor-pointer hover:bg-primary/30 transition-colors outline-none shrink-0 overflow-hidden">
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : profile?.avatar ? (
+                <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                getInitials(profile?.name ?? "U")
+              )}
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 mt-2">

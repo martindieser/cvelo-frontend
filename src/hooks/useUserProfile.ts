@@ -5,6 +5,8 @@ import { UserProfileViewModel } from "@/lib/viewmodels";
 const mockProfile: UserProfileViewModel = {
   name: "Juan Pérez",
   email: "juan.perez@gmail.com",
+  credits: 5,
+  avatar: "",
   location: "Madrid, España",
   phone: "+34 600 000 000",
   summary: "Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, APIs y herramientas de monitoreo para aportar en entornos dinámicos y desafiantes.",
