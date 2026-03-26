@@ -1,5 +1,5 @@
 import { ArrowRight, FileText, Target, Search, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CTAButton from "./CTAButton";
 
 const features = [
   {
@@ -41,9 +41,9 @@ const FeaturesSection = () => {
             </div>
           ))}
         </div>
-        <Button size="lg" className="rounded-full px-8 py-6 text-lg font-semibold gap-2">
+        <CTAButton size="lg" className="rounded-full px-8 py-6 text-lg font-semibold gap-2">
           ¡Adaptar mi CV ahora! <ArrowRight className="w-5 h-5" />
-        </Button>
+        </CTAButton>
         {/* <p className="mt-3 text-sm text-muted-foreground">Empieza gratis · Sin tarjeta de crédito</p> */}
       </div>
     </section>

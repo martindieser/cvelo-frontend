@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CTAButton from "./CTAButton";
 import tailoringMachine from "@/assets/tailoring-machine.png";
 
 const jobCards = [
@@ -29,9 +29,9 @@ const HeroSection = () => {
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
           Pega la descripción de un trabajo y obtén una versión de tu CV adaptada exactamente a lo que ese puesto requiere.
         </p>
-        <Button size="lg" className="rounded-full px-8 py-6 text-lg font-semibold gap-2 bg-primary hover:bg-primary/90">
+        <CTAButton size="lg" className="rounded-full px-8 py-6 text-lg font-semibold gap-2 bg-primary hover:bg-primary/90">
           ¡Adaptar mi CV ahora! <ArrowRight className="w-5 h-5" />
-        </Button>
+        </CTAButton>
         {/* <p className="mt-4 text-sm text-muted-foreground">
           Más de 55,000 CVs adaptados · 4.94/5 ⭐ (394{" "}
           <a href="#" className="underline">reseñas</a>)

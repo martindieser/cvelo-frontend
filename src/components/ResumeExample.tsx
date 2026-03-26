@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CTAButton from "./CTAButton";
 
 const changes = [
   "Añadida cláusula sobre disposición para aprender Java y Spring Boot.",
@@ -45,11 +45,11 @@ const ResumeExample = () => {
                 <li>• Reescribe puntos de experiencia para coincidir con los objetivos del puesto.</li>
                 <li>• Reordena habilidades clave para que sean fáciles de escanear.</li>
               </ul>
-              <Button size="lg" className="rounded-full px-8 py-5 text-base font-semibold gap-2 w-full">
+              <CTAButton size="lg" className="rounded-full px-8 py-5 text-base font-semibold gap-2 w-full">
                 ¡Adaptar mi CV ahora! <ArrowRight className="w-5 h-5" />
-              </Button>
-              {/* <p className="mt-3 text-xs text-muted-foreground text-center">Empieza gratis · Sin tarjeta de crédito</p> */}
+              </CTAButton>
             </div>
+            {/*<p className="mt-3 text-xs text-muted-foreground text-center">Empieza gratis · Sin tarjeta de crédito</p> */}
           </div>
         </div>
       </div>

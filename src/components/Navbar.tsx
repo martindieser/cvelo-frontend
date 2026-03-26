@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import CTAButton from "./CTAButton";
 
 const Navbar = () => {
   return (
@@ -13,9 +13,9 @@ const Navbar = () => {
         </div>
         <span className="font-bold text-lg">CurriAI</span>
       </div>
-      <Button variant="outline" className="rounded-full px-6 border-border hover:bg-muted">
+      <CTAButton variant="outline" className="rounded-full px-6 border-border hover:bg-muted">
         Iniciar sesión
-      </Button>
+      </CTAButton>
     </nav>
   );
 };

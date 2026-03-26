@@ -1,5 +1,5 @@
 import { CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CTAButton from "./CTAButton";
 
 const PricingSection = () => {
   return (
@@ -51,9 +51,10 @@ const PricingSection = () => {
           </div>
         </div>
         <div className="text-center mt-10">
-          <Button size="lg" className="rounded-full px-10 py-6 text-lg font-semibold bg-primary hover:bg-primary/90">
+          <CTAButton size="lg" className="rounded-full px-10 py-6 text-lg font-semibold bg-primary hover:bg-primary/90">
             Empezar Gratis Ahora
-          </Button>
+          </CTAButton>
+
         </div>
       </div>
     </section>
