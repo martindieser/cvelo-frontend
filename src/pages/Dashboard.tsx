@@ -13,11 +13,19 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ResumePreview from "@/components/dashboard/ResumePreview";
 import InsightsPanel from "@/components/dashboard/InsightsPanel";
+import TailorCV from "@/components/dashboard/TailorCV";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("tailor");
   const [jobName, setJobName] = useState("Mercado Libre");
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [isTailored, setIsTailored] = useState(false);
+
+  const handleAdaptCV = (description: string) => {
+    // Aquí iría la lógica de llamada a la API o procesamiento
+    console.log("Adaptando CV con descripción:", description);
+    setIsTailored(true);
+  };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
@@ -32,11 +40,23 @@ const Dashboard = () => {
         <div className="flex-1 overflow-y-auto p-4 lg:p-8">
           <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-8">
             
-            {/* CENTRAL RESUME VIEW */}
-            <ResumePreview jobName={jobName} />
+            {activeTab === "tailor" ? (
+              !isTailored ? (
+                <TailorCV onAdapt={handleAdaptCV} />
+              ) : (
+                <>
+                  {/* CENTRAL RESUME VIEW */}
+                  <ResumePreview jobName={jobName} />
 
-            {/* RIGHT PANEL (Desktop sidebar, Mobile bottom sheet) */}
-            <InsightsPanel />
+                  {/* RIGHT PANEL (Desktop sidebar, Mobile bottom sheet) */}
+                  <InsightsPanel />
+                </>
+              )
+            ) : (
+              <div className="flex-1 flex items-center justify-center h-[60vh] text-muted-foreground border-2 border-dashed border-border rounded-3xl">
+                Sección {activeTab} en desarrollo...
+              </div>
+            )}
             
           </div>
           
