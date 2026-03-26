@@ -33,6 +33,10 @@ const BuyCredits = ({ onClose }: BuyCreditsProps) => {
     if (onClose) onClose();
   };
 
+  const handleCancel = () => {
+    resetPayment();
+  };
+
   const increment = () => amount < 10 && setAmount(amount + 1);
   const decrement = () => amount > 1 && setAmount(amount - 1);
 
@@ -87,8 +91,12 @@ const BuyCredits = ({ onClose }: BuyCreditsProps) => {
               <ExternalLink className="w-4 h-4" />
               Pagar en el navegador
             </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground font-bold rounded-xl mt-1" onClick={resetPayment}>
-              Cancelar
+            <Button 
+              variant="outline" 
+              className="w-full rounded-xl font-bold gap-2 text-sm border-2 hover:bg-destructive/5 hover:border-destructive/20 hover:text-destructive transition-all h-11"
+              onClick={handleCancel}
+            >
+              Rechazar pago
             </Button>
           </div>
         </div>

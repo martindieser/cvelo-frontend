@@ -39,7 +39,7 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
           className="w-full justify-start gap-2 bg-primary/90 hover:bg-primary text-primary-foreground font-bold rounded-xl py-6 shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Sparkles className="w-4 h-4" />
-          <span>Plan Pro Ilimitado</span>
+          <span>Comprar créditos</span>
         </Button>
       </div>
 

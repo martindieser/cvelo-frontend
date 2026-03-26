@@ -21,7 +21,7 @@ export const InsightsContent = ({ keywords, changes }: InsightsContentProps) => 
             {kw}
           </Badge>
         ))}
-        <Badge className="bg-muted text-muted-foreground border-none px-3 py-1 rounded-full font-bold italic opacity-50">+ Agregar</Badge>
+        {/*<Badge className="bg-muted text-muted-foreground border-none px-3 py-1 rounded-full font-bold italic opacity-50">+ Agregar</Badge>*/}
       </div>
     </div>
 

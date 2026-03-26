@@ -28,6 +28,7 @@ import { AdaptedResumeViewModel } from "@/lib/viewmodels";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useTailoredResume } from "@/hooks/useTailoredResume";
 import LoadingScreen from "@/components/LoadingScreen";
+import { usePayment } from "@/hooks/usePayment";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("tailor");
@@ -36,6 +37,12 @@ const Dashboard = () => {
   const [isTailored, setIsTailored] = useState(false);
 
   const { profile, loading: profileLoading } = useUserProfile();
+  const { status: paymentStatus } = usePayment();
+  
+  // Force dialog open if payment is pending
+  const isAwaitingPayment = paymentStatus === "awaiting_payment";
+  const finalPricingOpen = isPricingOpen || isAwaitingPayment;
+
   const { 
     tailoredResume, 
     generating: tailoringGenerating, 
@@ -135,8 +142,17 @@ const Dashboard = () => {
       </main>
 
       {/* PRICING DIALOG */}
-      <Dialog open={isPricingOpen} onOpenChange={setIsPricingOpen}>
-        <DialogContent className="rounded-3xl w-[90vw] max-w-[360px] p-6 shadow-2xl">
+      <Dialog 
+        open={finalPricingOpen} 
+        onOpenChange={(open) => {
+          if (!isAwaitingPayment) setIsPricingOpen(open);
+        }}
+      >
+        <DialogContent 
+          className="rounded-3xl w-[90vw] max-w-[360px] p-6 shadow-2xl"
+          onPointerDownOutside={(e) => isAwaitingPayment && e.preventDefault()}
+          onEscapeKeyDown={(e) => isAwaitingPayment && e.preventDefault()}
+        >
           <DialogHeader className="pb-2">
             <DialogTitle className="text-xl font-black text-center">Comprar Créditos</DialogTitle>
           </DialogHeader>
