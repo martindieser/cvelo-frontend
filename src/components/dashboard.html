@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeAI – Tailor Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2335;
+    --border: #2a3050;
+    --accent: #00e5a0;
+    --accent2: #0066ff;
+    --danger: #ff4d6d;
+    --text: #e8eaf0;
+    --muted: #7a8099;
+    --tag-green: #00e5a020;
+    --tag-green-border: #00e5a060;
+    --tag-blue: #0066ff20;
+    --tag-blue-border: #0066ff60;
+    --resume-bg: #13171f;
+    --resume-accent: #6ea8fe;
+    --sidebar-w: 220px;
+    --right-w: 300px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 14px; color: #000;
+  }
+  .badge-free {
+    background: var(--accent);
+    color: #000;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px;
+  }
+  .badge-count {
+    color: var(--muted); font-size: 12px;
+  }
+  .btn-get-more {
+    background: transparent;
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-get-more:hover { background: var(--accent2); color: #fff; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .btn-tailor {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 13px;
+    padding: 8px 18px; border-radius: 8px;
+    cursor: pointer; transition: all .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-tailor:hover { transform: translateY(-1px); box-shadow: 0 4px 16px #00e5a040; }
+  .avatar {
+    width: 32px; height: 32px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--muted); cursor: pointer;
+  }
+
+  /* ── BODY LAYOUT ── */
+  .body-wrap {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .sidebar-section { margin-top: 12px; margin-bottom: 4px; }
+  .sidebar-label {
+    font-size: 10px; font-weight: 600; letter-spacing: .08em;
+    color: var(--muted); text-transform: uppercase;
+    padding: 0 8px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted); cursor: pointer;
+    transition: all .15s;
+    text-decoration: none;
+  }
+  .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+  .sidebar-item.active { background: var(--accent)18; color: var(--accent); }
+  .sidebar-item svg { flex-shrink: 0; opacity: .7; }
+  .sidebar-item.active svg { opacity: 1; }
+  .btn-unlimited {
+    background: linear-gradient(135deg, var(--accent), #00b37a);
+    color: #000; font-weight: 700; font-size: 13px;
+    border: none; border-radius: 10px;
+    padding: 10px 12px; cursor: pointer; width: 100%;
+    font-family: 'Syne', sans-serif;
+    text-align: center; margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all .2s;
+  }
+  .btn-unlimited:hover { transform: translateY(-1px); box-shadow: 0 4px 16px #00e5a040; }
+  .sidebar-spacer { flex: 1; }
+  .btn-earn {
+    background: #f5c518;
+    color: #000; font-weight: 700; font-size: 12px;
+    border: none; border-radius: 8px;
+    padding: 8px 12px; cursor: pointer; width: 100%;
+    font-family: 'Syne', sans-serif;
+    text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-earn:hover { opacity: .9; }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .main-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .btn-back {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted); font-size: 13px; font-weight: 500;
+    padding: 7px 14px; border-radius: 8px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: all .15s;
+  }
+  .btn-back:hover { border-color: var(--text); color: var(--text); }
+  .btn-download {
+    background: var(--accent2);
+    color: #fff; border: none; font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; transition: all .2s;
+  }
+  .btn-download:hover { background: #0055dd; }
+  .job-title-row {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .job-label { font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+  .job-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px; font-weight: 800; color: var(--text);
+  }
+  .job-actions { display: flex; gap: 8px; }
+  .job-actions button {
+    width: 30px; height: 30px;
+    border-radius: 8px; border: none; cursor: pointer;
+    font-size: 15px; display: flex; align-items: center; justify-content: center;
+  }
+  .btn-confirm { background: #00e5a030; color: var(--accent); border: 1px solid var(--accent) !important; }
+  .btn-reject  { background: #ff4d6d30; color: var(--danger);  border: 1px solid var(--danger) !important; }
+  .url-row {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 12px;
+  }
+  .url-row input {
+    background: transparent; border: none; outline: none;
+    color: var(--muted); font-size: 12px; font-family: 'DM Sans', sans-serif;
+    flex: 1;
+  }
+  .url-row input::placeholder { color: var(--muted); }
+
+  /* ── RESUME PREVIEW ── */
+  .resume-card {
+    background: #1a1f2e;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .resume-card-bar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .resume-edit-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px; padding: 4px 10px;
+    border-radius: 6px; cursor: pointer;
+    display: flex; align-items: center; gap: 5px; transition: all .15s;
+  }
+  .resume-edit-btn:hover { border-color: var(--text); color: var(--text); }
+  .resume-body {
+    padding: 32px 40px;
+    background: var(--resume-bg);
+  }
+  .resume-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 4px;
+  }
+  .resume-contact {
+    font-size: 12px; color: #a0aec0;
+    display: flex; gap: 16px; align-items: center;
+    margin-bottom: 16px;
+  }
+  .resume-contact a { color: var(--resume-accent); text-decoration: none; }
+  .resume-summary {
+    font-size: 13px; color: #c8d0e0; line-height: 1.65;
+    margin-bottom: 22px;
+  }
+  .resume-summary mark {
+    background: var(--accent)30; color: var(--accent);
+    border-radius: 3px; padding: 0 3px;
+  }
+  .resume-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--resume-accent);
+    border-bottom: 1px solid var(--resume-accent)40;
+    padding-bottom: 5px; margin-bottom: 14px; margin-top: 20px;
+    letter-spacing: .04em;
+  }
+  .resume-edu { font-size: 13px; color: #c8d0e0; font-weight: 600; }
+  .job-entry { margin-bottom: 18px; }
+  .job-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .job-role { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+  .job-company { font-size: 12px; color: #6b7fa0; }
+  .job-dates { font-size: 12px; color: #6b7fa0; white-space: nowrap; }
+  .job-bullets { list-style: disc; padding-left: 18px; }
+  .job-bullets li {
+    font-size: 12px; color: #c8d0e0; line-height: 1.6; margin-bottom: 5px;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    width: var(--right-w);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 20px 14px;
+    display: flex; flex-direction: column; gap: 16px;
+    flex-shrink: 0;
+  }
+  .panel-section { display: flex; flex-direction: column; gap: 8px; }
+  .panel-badge {
+    font-size: 11px; font-weight: 700; letter-spacing: .05em;
+    padding: 4px 10px; border-radius: 6px; display: inline-flex;
+    align-items: center; gap: 6px; width: fit-content;
+  }
+  .badge-keywords { background: #0066ff25; color: var(--accent2); border: 1px solid #0066ff50; }
+  .badge-changes  { background: #00e5a015; color: var(--accent);  border: 1px solid #00e5a040; }
+  .keywords-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+  .kw-tag {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px; cursor: pointer;
+    transition: all .15s;
+  }
+  .kw-green { background: var(--tag-green); color: var(--accent); border: 1px solid var(--tag-green-border); }
+  .kw-blue  { background: var(--tag-blue);  color: var(--accent2); border: 1px solid var(--tag-blue-border); }
+  .kw-tag:hover { transform: translateY(-1px); }
+
+  .change-group {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .change-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; cursor: pointer;
+    transition: background .15s;
+  }
+  .change-header:hover { background: #ffffff08; }
+  .change-title {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .change-icon { font-size: 14px; }
+  .change-body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .change-item {
+    font-size: 11px; color: #a0aec0; line-height: 1.55;
+    padding-left: 12px; border-left: 2px solid var(--border);
+    display: flex; gap: 6px;
+  }
+  .change-item::before { content: '−'; color: var(--muted); flex-shrink: 0; }
+  .helpful-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .helpful-label { font-size: 10px; color: var(--muted); }
+  .helpful-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer;
+  }
+  .helpful-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .chevron { transition: transform .2s; font-size: 12px; color: var(--muted); }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* ── AI CHAT ── */
+  .ai-chat-bar {
+    position: fixed; bottom: 20px; left: calc(var(--sidebar-w) + 32px);
+    right: calc(var(--right-w) + 32px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px #00000060;
+    z-index: 20;
+  }
+  .ai-chat-bar input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+  }
+  .ai-chat-bar input::placeholder { color: var(--muted); }
+  .ai-send-btn {
+    background: var(--accent);
+    border: none; border-radius: 8px;
+    width: 32px; height: 32px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .ai-send-btn:hover { transform: scale(1.08); }
+  .ai-indicator {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 #00e5a060; }
+    50%      { box-shadow: 0 0 0 5px #00e5a000; }
+  }
+
+  /* Loading */
+  .loading-overlay {
+    display: none; position: absolute; inset: 0;
+    background: var(--resume-bg)cc;
+    align-items: center; justify-content: center;
+    border-radius: 12px; z-index: 5;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+  /* Fade in */
+  .fade-in { animation: fadeIn .4s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">R</div>
+    <span class="badge-free">2 Free</span>
+    <span class="badge-count">Resumes left</span>
+    <button class="btn-get-more">Get +30 free!</button>
+  </div>
+  <div class="topbar-right">
+    <button class="btn-tailor" onclick="showTailorModal()">+ Tailor Resume</button>
+    <div class="avatar">👤</div>
+  </div>
+</div>
+
+<div class="body-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <button class="btn-unlimited">✦ Get Unlimited Tailoring</button>
+
+    <a class="sidebar-item active" href="#">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      Tailor Resume
+    </a>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
+      Personal information
+    </a>
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      Tailored documents
+    </a>
+
+    <div class="sidebar-spacer"></div>
+
+    <a class="sidebar-item" href="#">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 104.93 19.07"/></svg>
+      Settings
+    </a>
+    <button class="btn-earn">$ Earn with ResumeAI</button>
+    <a class="sidebar-item" href="#" style="margin-top:6px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      Logout
+    </a>
+    <p style="font-size:10px; color:var(--muted); padding: 8px 8px 0; line-height:1.5;">Need help?<br>Email us at <a href="mailto:contact@resumeai.co" style="color:var(--accent2);">contact@resumeai.co</a></p>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main" id="main">
+    <div class="main-header fade-in">
+      <button class="btn-back" onclick="history.back()">← Back to list</button>
+      <button class="btn-download" id="downloadBtn" onclick="handleDownload()">⬇ Download</button>
+    </div>
+
+    <div class="fade-in" style="animation-delay:.05s">
+      <div class="job-label">RESUME TAILORED FOR</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div class="job-name" id="jobName">Mercado Libre</div>
+        <div class="job-actions">
+          <button class="btn-confirm job-actions" title="Confirm">✓</button>
+          <button class="btn-reject job-actions" title="Reject">✕</button>
+        </div>
+      </div>
+      <div class="url-row" style="margin-top:6px;">
+        <span>🔗</span>
+        <input type="text" id="jobUrl" placeholder="Enter URL of this job description" />
+        <span style="cursor:pointer; font-size:14px;" onclick="document.getElementById('jobUrl').focus()">✏️</span>
+      </div>
+    </div>
+
+    <!-- RESUME CARD -->
+    <div class="resume-card fade-in" style="animation-delay:.1s; position:relative;">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+      </div>
+      <div class="resume-card-bar">
+        <div class="dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <button class="resume-edit-btn" onclick="openEditModal()">✏️ Edit</button>
+      </div>
+      <div class="resume-body" id="resumeBody">
+        <div class="resume-name" id="resumeNameEl">Lee Korelitz</div>
+        <div class="resume-contact">
+          <span>myemail@email.com</span>
+          <span>|</span>
+          <span>123-456-7234</span>
+          <a href="#">YouTube</a>
+          <a href="#">LinkedIn</a>
+        </div>
+        <div class="resume-summary" id="resumeSummaryEl">
+          Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, <mark>APIs</mark> y herramientas de <mark>monitoreo</mark> para aportar en entornos dinámicos y desafiantes.
+        </div>
+
+        <div class="resume-section-title">Formación académica</div>
+        <div class="resume-edu">Licenciatura en Economía (B.A. in Economics), NYC College</div>
+
+        <div class="resume-section-title">Historial laboral</div>
+
+        <div class="job-entry">
+          <div class="job-header">
+            <div>
+              <div class="job-role">Cajero · <span class="job-company">Large Ducks Coffee</span></div>
+            </div>
+            <div class="job-dates">Junio 2023 – Actualidad</div>
+          </div>
+          <ul class="job-bullets">
+            <li>Operé la caja registradora POS para cobrar a clientes y entregar cambio con precisión mientras preparaba alimentos y bebidas.</li>
+            <li>Manejé horarios de alta demanda mediante la multitarea y un servicio al cliente consistente, lo que se reflejó en múltiples reseñas de cinco estrellas.</li>
+            <li>Utilicé una computadora de escritorio para gestionar correo electrónico interno, completar capacitaciones en línea y administrar horarios de turnos.</li>
+            <li>Mantuve puntualidad y cubrí turnos según las necesidades del negocio.</li>
+          </ul>
+        </div>
+
+        <div class="job-entry">
+          <div class="job-header">
+            <div>
+              <div class="job-role">Mesero · <span class="job-company">Shake and Bake Doughnuts</span></div>
+            </div>
+            <div class="job-dates">Octubre 2021 – Junio 2023</div>
+          </div>
+          <ul class="job-bullets">
+            <li>Tomé y registré pedidos de clientes en el sistema POS, coordinando la entrega con el personal de cocina y verificando la satisfacción del cliente y la limpieza del área.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- spacer for chat bar -->
+    <div style="height:64px;"></div>
+  </main>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <div class="panel-section fade-in">
+      <span class="panel-badge badge-keywords">🔍 Matched keywords</span>
+      <div class="keywords-list" id="keywordsList">
+        <span class="kw-tag kw-green">monitoreo</span>
+        <span class="kw-tag kw-blue">APIs</span>
+      </div>
+    </div>
+
+    <div class="panel-section fade-in" style="animation-delay:.08s">
+      <span class="panel-badge badge-changes">⚡ Applied changes</span>
+
+      <div class="change-group" id="changeGroupSummary">
+        <div class="change-header" onclick="toggleGroup('summaryBody','chevron1')">
+          <div class="change-title"><span class="change-icon">💬</span> Summary</div>
+          <span class="chevron open" id="chevron1">▲</span>
+        </div>
+        <div class="change-body" id="summaryBody">
+          <div class="change-item">Se destacó explícitamente la experiencia en atención al cliente y manejo de POS, alineándola a cumplimiento de procesos y responsabilidad, en vez de habilidades técnicas que no figuran en el CV.</div>
+          <div class="change-item">Se evitó mencionar cualquier experiencia en programación, cloud, APIs, Docker, Kubernetes, CI/CD o lenguajes específicos, ya que no aparecen en el currículum.</div>
+          <div class="change-item">Se añadió una frase clara de búsqueda de inicio de trayectoria en ingeniería de software y disposición a aprender tecnologías de la descripción del puesto.</div>
+          <div class="helpful-row">
+            <span class="helpful-label">Helpful?</span>
+            <button class="helpful-btn" onclick="markHelpful(this, true)">👍</button>
+            <button class="helpful-btn" onclick="markHelpful(this, false)">👎</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="change-group">
+        <div class="change-header" onclick="toggleGroup('empBody','chevron2')">
+          <div class="change-title"><span class="change-icon">💼</span> Employment History</div>
+          <span class="chevron" id="chevron2">▲</span>
+        </div>
+        <div class="change-body" id="empBody" style="display:none">
+          <div class="change-item">Se reformularon los logros cuantificables para énfasis en resultados.</div>
+        </div>
+      </div>
+
+      <div class="change-group">
+        <div class="change-header" onclick="toggleGroup('cajBody','chevron3')">
+          <div class="change-title"><span class="change-icon">🗂️</span> Cajero</div>
+          <span class="chevron" id="chevron3">▲</span>
+        </div>
+        <div class="change-body" id="cajBody" style="display:none">
+          <div class="change-item">Bullet points refinados para destacar habilidades transferibles.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Tailor Button -->
+    <div style="margin-top:auto; padding-top:16px;">
+      <button onclick="runAITailor()" style="
+        width:100%; background: linear-gradient(135deg,#0066ff,#00e5a0);
+        color:#000; font-family:'Syne',sans-serif; font-weight:700; font-size:13px;
+        border:none; border-radius:10px; padding:11px; cursor:pointer; transition:all .2s;
+      " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        ✦ Re-Tailor with AI
+      </button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- AI CHAT BAR -->
+<div class="ai-chat-bar">
+  <div class="ai-indicator"></div>
+  <input type="text" id="aiChatInput" placeholder="Ask AI to improve your resume… e.g. 'Add more technical keywords'" onkeydown="if(event.key==='Enter') sendAIChat()" />
+  <button class="ai-send-btn" onclick="sendAIChat()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+  </button>
+</div>
+
+<!-- TAILOR MODAL (hidden) -->
+<div id="tailorModal" style="display:none; position:fixed; inset:0; background:#00000080; z-index:50; align-items:center; justify-content:center;">
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; width:420px; max-width:90vw;">
+    <h2 style="font-family:'Syne',sans-serif; font-size:20px; margin-bottom:18px;">+ New Tailored Resume</h2>
+    <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">Company / Job Title</label>
+    <input id="newJobName" type="text" placeholder="e.g. Google – Software Engineer" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; margin-bottom:14px;" />
+    <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">Job Description URL (optional)</label>
+    <input id="newJobUrl" type="url" placeholder="https://…" style="width:100%; padding:10px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; margin-bottom:20px;" />
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="closeTailorModal()" style="background:transparent; border:1px solid var(--border); color:var(--muted); padding:9px 18px; border-radius:8px; cursor:pointer; font-size:13px;">Cancel</button>
+      <button onclick="createTailored()" style="background:var(--accent); color:#000; border:none; padding:9px 18px; border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; font-size:13px;">✦ Tailor Now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── HELPERS ── */
+function toggleGroup(bodyId, chevId) {
+  const body = document.getElementById(bodyId);
+  const chev = document.getElementById(chevId);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'flex';
+  chev.classList.toggle('open', !isOpen);
+  chev.textContent = isOpen ? '▲' : '▼';
+}
+
+function markHelpful(btn, positive) {
+  btn.style.background = positive ? '#00e5a030' : '#ff4d6d30';
+  btn.style.color = positive ? 'var(--accent)' : 'var(--danger)';
+  btn.style.borderColor = positive ? 'var(--accent)' : 'var(--danger)';
+}
+
+function showTailorModal() {
+  const m = document.getElementById('tailorModal');
+  m.style.display = 'flex';
+}
+function closeTailorModal() {
+  document.getElementById('tailorModal').style.display = 'none';
+}
+function createTailored() {
+  const name = document.getElementById('newJobName').value.trim();
+  if (name) document.getElementById('jobName').textContent = name;
+  closeTailorModal();
+}
+function openEditModal() {
+  const name = prompt('Edit candidate name:', document.getElementById('resumeNameEl').textContent);
+  if (name) document.getElementById('resumeNameEl').textContent = name;
+}
+function handleDownload() {
+  const btn = document.getElementById('downloadBtn');
+  btn.textContent = '✓ Downloaded!';
+  btn.style.background = 'var(--accent)';
+  btn.style.color = '#000';
+  setTimeout(() => { btn.textContent = '⬇ Download'; btn.style.background = ''; btn.style.color = ''; }, 2500);
+}
+
+/* ── AI INTEGRATION ── */
+async function sendAIChat() {
+  const input = document.getElementById('aiChatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  input.placeholder = '⏳ AI is thinking…';
+  input.disabled = true;
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  try {
+    const summaryEl = document.getElementById('resumeSummaryEl');
+    const currentSummary = summaryEl.innerText;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: `You are a professional resume editor. The user has a resume and wants to improve it based on their instruction.
+Return ONLY a JSON object with these keys:
+{
+  "summaryUpdate": "<updated summary paragraph in the same language>",
+  "keywords": ["keyword1","keyword2"],
+  "changeDescription": "<one sentence describing what you changed>"
+}
+Do NOT include markdown, backticks, or any other text.`,
+        messages: [{
+          role: "user",
+          content: `Current summary:\n${currentSummary}\n\nUser instruction: ${msg}`
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content?.map(b => b.text || '').join('');
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/```json|```/g, '').trim()); } catch { parsed = null; }
+
+    if (parsed) {
+      // Update summary with highlighted keywords
+      let updatedSummary = parsed.summaryUpdate;
+      (parsed.keywords || []).forEach(kw => {
+        const re = new RegExp(`(${kw})`, 'gi');
+        updatedSummary = updatedSummary.replace(re, '<mark>$1</mark>');
+      });
+      summaryEl.innerHTML = updatedSummary;
+
+      // Add keywords to panel
+      const kwList = document.getElementById('keywordsList');
+      (parsed.keywords || []).forEach(kw => {
+        if (![...kwList.querySelectorAll('.kw-tag')].some(el => el.textContent.toLowerCase() === kw.toLowerCase())) {
+          const tag = document.createElement('span');
+          tag.className = 'kw-tag kw-green';
+          tag.textContent = kw;
+          kwList.appendChild(tag);
+        }
+      });
+
+      // Add change note
+      if (parsed.changeDescription) {
+        const sumBody = document.getElementById('summaryBody');
+        const item = document.createElement('div');
+        item.className = 'change-item';
+        item.textContent = parsed.changeDescription;
+        sumBody.insertBefore(item, sumBody.querySelector('.helpful-row'));
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('show');
+    input.placeholder = 'Ask AI to improve your resume…';
+    input.disabled = false;
+  }
+}
+
+async function runAITailor() {
+  const jobName = document.getElementById('jobName').textContent;
+  document.getElementById('aiChatInput').value = `Tailor my resume for ${jobName}, highlighting customer service and tech aptitude`;
+  await sendAIChat();
+}
+</script>
+</body>
+</html>
