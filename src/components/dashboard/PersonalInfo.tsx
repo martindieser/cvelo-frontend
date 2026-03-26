@@ -28,39 +28,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-// Tipos básicos para la información
-interface SocialLink {
-  id: string;
-  platform: string;
-  url: string;
-}
-
-interface WorkExperience {
-  id: string;
-  role: string;
-  company: string;
-  period: string;
-  details: string;
-}
-
-interface Education {
-  id: string;
-  degree: string;
-  institution: string;
-  period: string;
-}
-
-interface Language {
-  id: string;
-  name: string;
-  level: string;
-}
+import { 
+  UserProfileViewModel, 
+  SocialLinkViewModel, 
+  WorkExperienceViewModel, 
+  EducationViewModel, 
+  LanguageViewModel 
+} from "@/lib/viewmodels";
 
 const PersonalInfo = () => {
-  // Estado hardcodeado inicial
-  const [profile, setProfile] = useState({
+  // Estado hardcodeado inicial utilizando el ViewModel
+  const [profile, setProfile] = useState<UserProfileViewModel>({
     name: "Juan Pérez",
-    email: "juan.perez@email.com",
+    email: "juan.perez@gmail.com",
     location: "Madrid, España",
     phone: "+34 600 000 000",
     summary: "Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, APIs y herramientas de monitoreo para aportar en entornos dinámicos y desafiantes.",
@@ -101,10 +81,10 @@ const PersonalInfo = () => {
   // Estados para edición temporal
   const [tempGeneral, setGeneral] = useState({ name: profile.name, email: profile.email, location: profile.location, phone: profile.phone });
   const [tempSummary, setSummary] = useState(profile.summary);
-  const [tempExp, setTempExp] = useState<WorkExperience>({ id: "", role: "", company: "", period: "", details: "" });
-  const [tempEdu, setTempEdu] = useState<Education>({ id: "", degree: "", institution: "", period: "" });
-  const [tempSocial, setTempSocial] = useState<SocialLink>({ id: "", platform: "", url: "" });
-  const [tempLang, setTempLang] = useState<Language>({ id: "", name: "", level: "" });
+  const [tempExp, setTempExp] = useState<WorkExperienceViewModel>({ id: "", role: "", company: "", period: "", details: "" });
+  const [tempEdu, setTempEdu] = useState<EducationViewModel>({ id: "", degree: "", institution: "", period: "" });
+  const [tempSocial, setTempSocial] = useState<SocialLinkViewModel>({ id: "", platform: "", url: "" });
+  const [tempLang, setTempLang] = useState<LanguageViewModel>({ id: "", name: "", level: "" });
   const [tempSkills, setTempSkills] = useState(profile.skills.join(", "));
   const [tempCerts, setTempCerts] = useState(profile.certificates.join(", "));
 

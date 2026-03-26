@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
+import { TestimonialViewModel } from "@/lib/viewmodels";
 
-const testimonials = [
+const testimonials: TestimonialViewModel[] = [
   {
     name: "Gabriela A.",
     date: "9 Nov 2025",

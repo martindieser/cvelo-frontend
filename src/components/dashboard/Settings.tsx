@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Globe, 
-  MessageSquare, 
   Layout, 
   GripVertical, 
   Save, 
@@ -17,10 +16,9 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Reorder } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { UserSettingsViewModel } from "@/lib/viewmodels";
 
 const templates = [
   { id: "modern", name: "Moderno", description: "Limpio y profesional, ideal para tech." },
@@ -38,21 +36,37 @@ const initialSections = [
   { id: "certificados", name: "Certificados" },
 ];
 
-const Settings = () => {
-  const [language, setLanguage] = useState("auto");
-  const [tone, setTone] = useState("professional");
-  const [template, setTemplate] = useState("modern");
-  const [sections, setSections] = useState(initialSections);
+interface SettingsProps {
+  settings: UserSettingsViewModel;
+  onSave: (newSettings: UserSettingsViewModel) => void;
+}
+
+const Settings = ({ settings, onSave }: SettingsProps) => {
+  const [language, setLanguage] = useState(settings.language);
+  const [template, setTemplate] = useState(settings.template);
+  const [sections, setSections] = useState(settings.sectionsOrder);
   const [isSaved, setIsSaved] = useState(false);
 
+  // Sincronizar si cambian las props externas
+  useEffect(() => {
+    setLanguage(settings.language);
+    setTemplate(settings.template);
+    setSections(settings.sectionsOrder);
+  }, [settings]);
+
   const handleSave = () => {
+    onSave({
+      language,
+      tone: settings.tone, // Mantener tono actual
+      template,
+      sectionsOrder: sections
+    });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
 
   const handleReset = () => {
     setLanguage("auto");
-    setTone("professional");
     setTemplate("modern");
     setSections(initialSections);
   };

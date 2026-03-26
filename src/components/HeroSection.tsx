@@ -6,6 +6,7 @@ const jobCards = [
   { icon: "in", title: "Social Media Manager", company: "EmpresaIncreíble" },
   { icon: "i", title: "Consultor PR", company: "EmpresaIncreíble" },
   { icon: "g", title: "Especialista en Marketing", company: "EmpresaGenial" },
+  { icon: "u", title: "Gordito de RRHH", company: "Pico de Oro" },
 ];
 
 const resumeCards = [

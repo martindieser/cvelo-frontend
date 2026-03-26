@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Search, 
   FileText, 
@@ -29,40 +29,34 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
-interface AdaptedResume {
-  id: string;
-  companyName: string;
-  resumeName: string;
-  date: string;
-}
+import { AdaptedResumeViewModel } from "@/lib/viewmodels";
 
 interface MyDocumentsProps {
-  onView: (doc: AdaptedResume) => void;
+  initialDocuments: AdaptedResumeViewModel[];
+  onView: (doc: AdaptedResumeViewModel) => void;
 }
 
-const MyDocuments = ({ onView }: MyDocumentsProps) => {
-  // Datos hardcodeados iniciales
-  const [documents, setDocuments] = useState<AdaptedResume[]>([
-    { id: "1", companyName: "Mercado Libre", resumeName: "CV Frontend Dev - ML", date: "24/03/2026" },
-    { id: "2", companyName: "Globant", resumeName: "React Engineer Globant", date: "22/03/2026" },
-    { id: "3", companyName: "Google", resumeName: "Senior Frontend Search", date: "20/03/2026" },
-    { id: "4", companyName: "Accenture", resumeName: "Consultor Técnico", date: "18/03/2026" },
-    { id: "5", companyName: "Amazon", resumeName: "Cloud Engineer AWS", date: "15/03/2026" },
-    { id: "6", companyName: "Netflix", resumeName: "UI Specialist", date: "10/03/2026" },
-  ]);
-
-  const [searchTerm, setSearchSetTerm] = useState("");
+const MyDocuments = ({ initialDocuments, onView }: MyDocumentsProps) => {
+  // Estado interno manejado por el propio componente
+  const [documents, setDocuments] = useState<AdaptedResumeViewModel[]>(initialDocuments);
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   // Estado para edición
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingDoc, setEditingDoc] = useState<AdaptedResume | null>(null);
+  const [editingDoc, setEditingDoc] = useState<AdaptedResumeViewModel | null>(null);
   const [tempNames, setTempNames] = useState({ company: "", resume: "" });
+
+  // Sincronizar si la data externa cambia (ej: se genera uno nuevo)
+  useEffect(() => {
+    setDocuments(initialDocuments);
+  }, [initialDocuments]);
 
   // Filtrado y Paginación
   const filteredDocs = documents.filter(doc => 
-    doc.companyName.toLowerCase().includes(searchTerm.toLowerCase())
+    doc.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    doc.resumeName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredDocs.length / itemsPerPage);
@@ -74,7 +68,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
     setDocuments(documents.filter(doc => doc.id !== id));
   };
 
-  const openEditDialog = (doc: AdaptedResume) => {
+  const openEditDialog = (doc: AdaptedResumeViewModel) => {
     setEditingDoc(doc);
     setTempNames({ company: doc.companyName, resume: doc.resumeName });
     setIsEditDialogOpen(true);
@@ -104,12 +98,12 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
       <div className="relative group max-w-md">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
         <Input 
-          placeholder="Buscar por empresa..." 
+          placeholder="Buscar por empresa o nombre..." 
           className="pl-12 h-12 rounded-2xl border-border focus:ring-primary/20 text-base shadow-sm"
           value={searchTerm}
           onChange={(e) => {
-            setSearchSetTerm(e.target.value);
-            setCurrentPage(1); // Resetear a pag 1 al buscar
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); 
           }}
         />
       </div>
@@ -128,7 +122,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <FileText className="w-6 h-6 text-primary" />
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 text-left">
                     <h3 className="font-bold text-base lg:text-lg truncate">{doc.resumeName}</h3>
                     <div className="flex items-center gap-3 text-xs lg:text-sm text-muted-foreground font-medium">
                       <span className="flex items-center gap-1">
@@ -152,7 +146,10 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
                       variant="ghost" 
                       size="icon" 
                       className="rounded-xl hover:bg-primary/10 hover:text-primary h-10 w-10"
-                      onClick={() => openEditDialog(doc)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditDialog(doc);
+                      }}
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
@@ -160,7 +157,10 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
                       variant="ghost" 
                       size="icon" 
                       className="rounded-xl hover:bg-destructive/10 hover:text-destructive h-10 w-10"
-                      onClick={() => handleDelete(doc.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(doc.id);
+                      }}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -190,7 +190,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
             <h3 className="text-lg font-bold">No se encontraron documentos</h3>
-            <p className="text-muted-foreground text-sm">Prueba buscando con otro nombre de empresa.</p>
+            <p className="text-muted-foreground text-sm">Prueba buscando con otro nombre.</p>
           </div>
         )}
       </div>

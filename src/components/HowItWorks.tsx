@@ -1,4 +1,6 @@
-const steps = [
+import { StepViewModel } from "@/lib/viewmodels";
+
+const steps: StepViewModel[] = [
   {
     num: "1.",
     title: "Sube tu currículum actual",

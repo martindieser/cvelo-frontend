@@ -1,7 +1,8 @@
 import { ArrowRight, FileText, Target, Search, TrendingUp } from "lucide-react";
 import CTAButton from "./CTAButton";
+import { FeatureViewModel } from "@/lib/viewmodels";
 
-const features = [
+const features: FeatureViewModel[] = [
   {
     icon: FileText,
     title: "Plantillas de CV optimizadas",

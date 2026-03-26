@@ -1,6 +1,7 @@
 import { ArrowLeft, Download, Pencil, Check, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Drawer,
   DrawerContent,
@@ -9,13 +10,27 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { InsightsContent } from "./InsightsPanel";
+import { TailoredResumeViewModel } from "@/lib/viewmodels";
 
 interface ResumePreviewProps {
-  jobName: string;
   onBack: () => void;
+  data: TailoredResumeViewModel;
 }
 
-const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
+const ResumePreview = ({ onBack, data }: ResumePreviewProps) => {
+  const { 
+    baseProfile, 
+    optimizedSummary, 
+    optimizedExperience, 
+    optimizedSkills,
+    optimizedEducation,
+    optimizedLanguages,
+    optimizedCertificates,
+    jobName, 
+    detectedKeywords, 
+    appliedChanges 
+  } = data;
+
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -27,7 +42,6 @@ const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
         </button>
         
         <div className="flex items-center gap-2">
-          {/* Insights Button - Only Mobile/Tablet (Visible until XL) */}
           <div className="xl:hidden">
             <Drawer>
               <DrawerTrigger asChild>
@@ -44,7 +58,7 @@ const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
                   </DrawerTitle>
                 </DrawerHeader>
                 <div className="px-6 overflow-y-auto custom-scrollbar pb-10">
-                  <InsightsContent />
+                  <InsightsContent keywords={detectedKeywords} changes={appliedChanges} />
                 </div>
               </DrawerContent>
             </Drawer>
@@ -56,7 +70,7 @@ const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
         </div>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1 text-left">
         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
           CV ADAPTADO PARA
         </span>
@@ -78,7 +92,6 @@ const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
         </div>
       </div>
 
-      {/* RESUME PREVIEW CARD */}
       <Card className="border-border shadow-xl rounded-2xl overflow-hidden bg-white mx-auto">
         <div className="bg-muted/30 border-b border-border px-4 lg:px-6 py-3 flex items-center justify-between">
           <div className="flex gap-1.5">
@@ -90,45 +103,113 @@ const ResumePreview = ({ jobName, onBack }: ResumePreviewProps) => {
             <Pencil className="w-3 h-3 lg:w-3.5 h-3.5" /> Editar contenido
           </Button>
         </div>
-        <CardContent className="p-6 lg:p-12 space-y-6 lg:space-y-8 text-[#2d3748]">
+        <CardContent className="p-6 lg:p-12 space-y-6 lg:space-y-10 text-[#2d3748] text-left">
           {/* Header */}
           <div className="space-y-2 border-b-2 border-primary/20 pb-6">
-            <h2 className="text-2xl lg:text-3xl font-bold text-foreground">Juan Pérez</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-foreground">{baseProfile.name}</h2>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs lg:text-sm text-muted-foreground font-medium">
-              <span>juan.perez@email.com</span>
+              <span>{baseProfile.email}</span>
               <span className="hidden sm:inline">•</span>
-              <span>+34 600 000 000</span>
+              <span>{baseProfile.phone}</span>
               <span className="hidden sm:inline">•</span>
-              <a href="#" className="text-primary hover:underline">LinkedIn</a>
-              <a href="#" className="text-primary hover:underline">Portfolio</a>
+              {baseProfile.socialLinks.map((link, i) => (
+                <span key={link.id} className="flex items-center gap-4">
+                  <a href={link.url} className="text-primary hover:underline">{link.platform}</a>
+                  {i < baseProfile.socialLinks.length - 1 && <span className="hidden sm:inline text-muted-foreground">•</span>}
+                </span>
+              ))}
             </div>
           </div>
 
           {/* Summary */}
           <div className="space-y-3">
             <h3 className="text-[10px] lg:text-sm font-bold text-primary uppercase tracking-widest">Resumen Profesional</h3>
-            <p className="text-sm lg:text-base leading-relaxed text-foreground/90">
-              Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, <mark className="bg-primary/20 text-foreground px-1 rounded">APIs</mark> y herramientas de <mark className="bg-primary/20 text-foreground px-1 rounded">monitoreo</mark> para aportar en entornos dinámicos y desafiantes.
+            <p className="text-sm lg:text-base leading-relaxed text-foreground/90 whitespace-pre-line">
+              {optimizedSummary}
             </p>
           </div>
+
+          {/* Skills (Optimized) */}
+          {optimizedSkills.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-[10px] lg:text-sm font-bold text-primary uppercase tracking-widest">Habilidades</h3>
+              <div className="flex flex-wrap gap-2">
+                {optimizedSkills.map((skill, i) => (
+                  <Badge key={i} variant="outline" className="rounded-md border-primary/20 bg-primary/5 text-primary-foreground/80 font-semibold py-1">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Experience */}
           <div className="space-y-6">
             <h3 className="text-[10px] lg:text-sm font-bold text-primary uppercase tracking-widest">Experiencia Laboral</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-1">
-                  <h4 className="font-bold text-base lg:text-lg">Cajero <span className="font-medium text-muted-foreground text-sm lg:text-lg">· Large Ducks Coffee</span></h4>
-                  <span className="text-[10px] lg:text-sm font-semibold text-muted-foreground">Junio 2023 – Actualidad</span>
+            <div className="space-y-8">
+              {optimizedExperience.map((exp) => (
+                <div key={exp.id} className="space-y-2">
+                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-1">
+                    <h4 className="font-bold text-base lg:text-lg">{exp.role} <span className="font-medium text-muted-foreground text-sm lg:text-lg">· {exp.company}</span></h4>
+                    <span className="text-[10px] lg:text-sm font-semibold text-muted-foreground">{exp.period}</span>
+                  </div>
+                  <ul className="list-disc list-outside ml-4 space-y-2 text-xs lg:text-sm leading-relaxed text-foreground/80 whitespace-pre-line">
+                    {exp.details.split('\n').map((line, i) => (
+                      <li key={i}>{line.replace(/^[-•]\s*/, '')}</li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="list-disc list-outside ml-4 space-y-2 text-xs lg:text-sm leading-relaxed text-foreground/80">
-                  <li>Operé la caja registradora POS para cobrar a clientes y entregar cambio con precisión mientras preparaba alimentos y bebidas.</li>
-                  <li>Manejé horarios de alta demanda mediante la multitarea y un servicio al cliente consistente.</li>
-                  <li>Utilicé una computadora de escritorio para gestionar correo electrónico interno y completar capacitaciones en línea.</li>
-                </ul>
-              </div>
+              ))}
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-t border-border/50 pt-8">
+            {/* Education (Optimized) */}
+            {optimizedEducation.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-[10px] lg:text-sm font-bold text-primary uppercase tracking-widest">Educación</h3>
+                <div className="space-y-4">
+                  {optimizedEducation.map((edu) => (
+                    <div key={edu.id} className="space-y-1">
+                      <h4 className="font-bold text-sm lg:text-base">{edu.degree}</h4>
+                      <p className="text-xs text-muted-foreground font-medium">{edu.institution}</p>
+                      <p className="text-[10px] font-semibold text-primary/70">{edu.period}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Languages (Optimized) */}
+            {optimizedLanguages.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-[10px] lg:text-sm font-bold text-primary uppercase tracking-widest">Idiomas</h3>
+                <div className="space-y-2">
+                  {optimizedLanguages.map((lang) => (
+                    <div key={lang.id} className="flex items-center justify-between text-sm">
+                      <span className="font-bold">{lang.name}</span>
+                      <span className="text-xs text-muted-foreground">{lang.level}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Certificates (Optimized) */}
+          {optimizedCertificates.length > 0 && (
+            <div className="space-y-4 border-t border-border/50 pt-8">
+              <h3 className="text-[10px] lg:text-sm font-bold text-primary uppercase tracking-widest">Certificaciones</h3>
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                {optimizedCertificates.map((cert, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs font-medium text-foreground/80">
+                    <div className="w-1 h-1 rounded-full bg-primary" />
+                    {cert}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
