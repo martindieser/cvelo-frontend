@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   User, 
   Mail, 
@@ -29,44 +29,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import { 
-  UserProfileViewModel, 
   SocialLinkViewModel, 
   WorkExperienceViewModel, 
   EducationViewModel, 
   LanguageViewModel 
 } from "@/lib/viewmodels";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const PersonalInfo = () => {
-  // Estado hardcodeado inicial utilizando el ViewModel
-  const [profile, setProfile] = useState<UserProfileViewModel>({
-    name: "Juan Pérez",
-    email: "juan.perez@gmail.com",
-    location: "Madrid, España",
-    phone: "+34 600 000 000",
-    summary: "Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, APIs y herramientas de monitoreo para aportar en entornos dinámicos y desafiantes.",
-    skills: ["React", "TypeScript", "Node.js", "SQL", "Git", "Customer Service", "POS Management"],
-    socialLinks: [
-      { id: "1", platform: "LinkedIn", url: "linkedin.com/in/juanperez" },
-      { id: "2", platform: "Portfolio", url: "juanperez.dev" }
-    ],
-    experience: [
-      { 
-        id: "1", 
-        role: "Cajero", 
-        company: "Large Ducks Coffee", 
-        period: "Junio 2023 – Actualidad",
-        details: "Operé la caja registradora POS para cobrar a clientes y entregar cambio con precisión mientras preparaba alimentos y bebidas.\nManejé horarios de alta demanda mediante la multitarea y un servicio al cliente consistente.\nUtilicé una computadora de escritorio para gestionar correo electrónico interno y completar capacitaciones en línea."
-      }
-    ],
-    education: [
-      { id: "1", degree: "Bachillerato", institution: "Instituto Tecnológico", period: "2019 - 2021" }
-    ],
-    languages: [
-      { id: "1", name: "Español", level: "Nativo" },
-      { id: "2", name: "Inglés", level: "B2 - Intermedio Alto" }
-    ],
-    certificates: ["Certificado de Atención al Cliente", "Google Cloud Digital Leader"]
-  });
+  const { profile, updateProfile, loading } = useUserProfile();
 
   // Estados para diálogos
   const [isGeneralOpen, setIsGeneralOpen] = useState(false);
@@ -79,85 +51,101 @@ const PersonalInfo = () => {
   const [isCertOpen, setIsCertOpen] = useState(false);
 
   // Estados para edición temporal
-  const [tempGeneral, setGeneral] = useState({ name: profile.name, email: profile.email, location: profile.location, phone: profile.phone });
-  const [tempSummary, setSummary] = useState(profile.summary);
+  const [tempGeneral, setGeneral] = useState({ name: "", email: "", location: "", phone: "" });
+  const [tempSummary, setSummary] = useState("");
   const [tempExp, setTempExp] = useState<WorkExperienceViewModel>({ id: "", role: "", company: "", period: "", details: "" });
   const [tempEdu, setTempEdu] = useState<EducationViewModel>({ id: "", degree: "", institution: "", period: "" });
   const [tempSocial, setTempSocial] = useState<SocialLinkViewModel>({ id: "", platform: "", url: "" });
   const [tempLang, setTempLang] = useState<LanguageViewModel>({ id: "", name: "", level: "" });
-  const [tempSkills, setTempSkills] = useState(profile.skills.join(", "));
-  const [tempCerts, setTempCerts] = useState(profile.certificates.join(", "));
+  const [tempSkills, setTempSkills] = useState("");
+  const [tempCerts, setTempCerts] = useState("");
+
+  // Sincronizar temporales cuando el perfil carga
+  useEffect(() => {
+    if (profile) {
+      setGeneral({ name: profile.name, email: profile.email, location: profile.location, phone: profile.phone });
+      setSummary(profile.summary);
+      setTempSkills(profile.skills.join(", "));
+      setTempCerts(profile.certificates.join(", "));
+    }
+  }, [profile]);
+
+  if (loading) {
+    return <LoadingScreen fullScreen={false} message="Cargando tu información" />;
+  }
+
+  if (!profile) return null;
 
   // Handlers
   const saveGeneral = () => {
-    setProfile({ ...profile, ...tempGeneral });
+    updateProfile({ ...tempGeneral });
     setIsGeneralOpen(false);
   };
 
   const saveSummary = () => {
-    setProfile({ ...profile, summary: tempSummary });
+    updateProfile({ summary: tempSummary });
     setIsSummaryOpen(false);
   };
 
   const deleteExp = (id: string) => {
-    setProfile({ ...profile, experience: profile.experience.filter(e => e.id !== id) });
+    updateProfile({ experience: profile.experience.filter(e => e.id !== id) });
   };
 
   const saveExp = () => {
     if (tempExp.id) {
-      setProfile({ ...profile, experience: profile.experience.map(e => e.id === tempExp.id ? tempExp : e) });
+      updateProfile({ experience: profile.experience.map(e => e.id === tempExp.id ? tempExp : e) });
     } else {
-      setProfile({ ...profile, experience: [...profile.experience, { ...tempExp, id: Math.random().toString() }] });
+      updateProfile({ experience: [...profile.experience, { ...tempExp, id: Math.random().toString() }] });
     }
     setIsExperienceOpen(false);
   };
 
   const deleteEdu = (id: string) => {
-    setProfile({ ...profile, education: profile.education.filter(e => e.id !== id) });
+    updateProfile({ education: profile.education.filter(e => e.id !== id) });
   };
 
   const saveEdu = () => {
     if (tempEdu.id) {
-      setProfile({ ...profile, education: profile.education.map(e => e.id === tempEdu.id ? tempEdu : e) });
+      updateProfile({ education: profile.education.map(e => e.id === tempEdu.id ? tempEdu : e) });
     } else {
-      setProfile({ ...profile, education: [...profile.education, { ...tempEdu, id: Math.random().toString() }] });
+      updateProfile({ education: [...profile.education, { ...tempEdu, id: Math.random().toString() }] });
     }
     setIsEducationOpen(false);
   };
 
   const saveSocial = () => {
     if (tempSocial.id) {
-      setProfile({ ...profile, socialLinks: profile.socialLinks.map(s => s.id === tempSocial.id ? tempSocial : s) });
+      updateProfile({ socialLinks: profile.socialLinks.map(s => s.id === tempSocial.id ? tempSocial : s) });
     } else {
-      setProfile({ ...profile, socialLinks: [...profile.socialLinks, { ...tempSocial, id: Math.random().toString() }] });
+      updateProfile({ socialLinks: [...profile.socialLinks, { ...tempSocial, id: Math.random().toString() }] });
     }
     setIsSocialOpen(false);
   };
 
   const deleteSocial = (id: string) => {
-    setProfile({ ...profile, socialLinks: profile.socialLinks.filter(s => s.id !== id) });
+    updateProfile({ socialLinks: profile.socialLinks.filter(s => s.id !== id) });
   };
 
   const saveSkills = () => {
-    setProfile({ ...profile, skills: tempSkills.split(",").map(s => s.trim()).filter(s => s !== "") });
+    updateProfile({ skills: tempSkills.split(",").map(s => s.trim()).filter(s => s !== "") });
     setIsSkillOpen(false);
   };
 
   const saveLanguages = () => {
     if (tempLang.id) {
-      setProfile({ ...profile, languages: profile.languages.map(l => l.id === tempLang.id ? tempLang : l) });
+      updateProfile({ languages: profile.languages.map(l => l.id === tempLang.id ? tempLang : l) });
     } else {
-      setProfile({ ...profile, languages: [...profile.languages, { ...tempLang, id: Math.random().toString() }] });
+      updateProfile({ languages: [...profile.languages, { ...tempLang, id: Math.random().toString() }] });
     }
     setIsLanguageOpen(false);
   };
 
   const deleteLang = (id: string) => {
-    setProfile({ ...profile, languages: profile.languages.filter(l => l.id !== id) });
+    updateProfile({ languages: profile.languages.filter(l => l.id !== id) });
   };
 
   const saveCerts = () => {
-    setProfile({ ...profile, certificates: tempCerts.split(",").map(c => c.trim()).filter(c => c !== "") });
+    updateProfile({ certificates: tempCerts.split(",").map(c => c.trim()).filter(c => c !== "") });
     setIsCertOpen(false);
   };
 

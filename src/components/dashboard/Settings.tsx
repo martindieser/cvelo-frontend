@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/select";
 import { Reorder } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { UserSettingsViewModel } from "@/lib/viewmodels";
+import { SectionViewModel } from "@/lib/viewmodels";
+import { useUserSettings } from "@/hooks/useUserSettings";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const templates = [
   { id: "modern", name: "Moderno", description: "Limpio y profesional, ideal para tech." },
@@ -36,28 +38,31 @@ const initialSections = [
   { id: "certificados", name: "Certificados" },
 ];
 
-interface SettingsProps {
-  settings: UserSettingsViewModel;
-  onSave: (newSettings: UserSettingsViewModel) => void;
-}
-
-const Settings = ({ settings, onSave }: SettingsProps) => {
-  const [language, setLanguage] = useState(settings.language);
-  const [template, setTemplate] = useState(settings.template);
-  const [sections, setSections] = useState(settings.sectionsOrder);
+const Settings = () => {
+  const { settings, loading, updateSettings } = useUserSettings();
+  const [language, setLanguage] = useState("auto");
+  const [template, setTemplate] = useState("modern");
+  const [sections, setSections] = useState<SectionViewModel[]>(initialSections);
   const [isSaved, setIsSaved] = useState(false);
 
-  // Sincronizar si cambian las props externas
+  // Sincronizar cuando cargan los settings
   useEffect(() => {
-    setLanguage(settings.language);
-    setTemplate(settings.template);
-    setSections(settings.sectionsOrder);
+    if (settings) {
+      setLanguage(settings.language);
+      setTemplate(settings.template);
+      setSections(settings.sectionsOrder);
+    }
   }, [settings]);
 
+  if (loading) {
+    return <LoadingScreen fullScreen={false} message="Cargando tu configuración" />;
+  }
+
+  if (!settings) return null;
+
   const handleSave = () => {
-    onSave({
+    updateSettings({
       language,
-      tone: settings.tone, // Mantener tono actual
       template,
       sectionsOrder: sections
     });

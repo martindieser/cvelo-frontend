@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Search, 
   FileText, 
@@ -30,15 +30,15 @@ import {
 import { Label } from "@/components/ui/label";
 
 import { AdaptedResumeViewModel } from "@/lib/viewmodels";
+import { useResumes } from "@/hooks/useResumes";
+import LoadingScreen from "@/components/LoadingScreen";
 
 interface MyDocumentsProps {
-  initialDocuments: AdaptedResumeViewModel[];
   onView: (doc: AdaptedResumeViewModel) => void;
 }
 
-const MyDocuments = ({ initialDocuments, onView }: MyDocumentsProps) => {
-  // Estado interno manejado por el propio componente
-  const [documents, setDocuments] = useState<AdaptedResumeViewModel[]>(initialDocuments);
+const MyDocuments = ({ onView }: MyDocumentsProps) => {
+  const { resumes, loading, deleteResume, updateResume } = useResumes();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
@@ -48,13 +48,12 @@ const MyDocuments = ({ initialDocuments, onView }: MyDocumentsProps) => {
   const [editingDoc, setEditingDoc] = useState<AdaptedResumeViewModel | null>(null);
   const [tempNames, setTempNames] = useState({ company: "", resume: "" });
 
-  // Sincronizar si la data externa cambia (ej: se genera uno nuevo)
-  useEffect(() => {
-    setDocuments(initialDocuments);
-  }, [initialDocuments]);
+  if (loading) {
+    return <LoadingScreen fullScreen={false} message="Cargando tus documentos" />;
+  }
 
   // Filtrado y Paginación
-  const filteredDocs = documents.filter(doc => 
+  const filteredDocs = resumes.filter(doc => 
     doc.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     doc.resumeName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -62,11 +61,6 @@ const MyDocuments = ({ initialDocuments, onView }: MyDocumentsProps) => {
   const totalPages = Math.ceil(filteredDocs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentDocs = filteredDocs.slice(startIndex, startIndex + itemsPerPage);
-
-  // Handlers
-  const handleDelete = (id: string) => {
-    setDocuments(documents.filter(doc => doc.id !== id));
-  };
 
   const openEditDialog = (doc: AdaptedResumeViewModel) => {
     setEditingDoc(doc);
@@ -76,11 +70,10 @@ const MyDocuments = ({ initialDocuments, onView }: MyDocumentsProps) => {
 
   const saveEdit = () => {
     if (editingDoc) {
-      setDocuments(documents.map(doc => 
-        doc.id === editingDoc.id 
-          ? { ...doc, companyName: tempNames.company, resumeName: tempNames.resume } 
-          : doc
-      ));
+      updateResume(editingDoc.id, { 
+        companyName: tempNames.company, 
+        resumeName: tempNames.resume 
+      });
       setIsEditDialogOpen(false);
     }
   };
@@ -159,7 +152,7 @@ const MyDocuments = ({ initialDocuments, onView }: MyDocumentsProps) => {
                       className="rounded-xl hover:bg-destructive/10 hover:text-destructive h-10 w-10"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(doc.id);
+                        deleteResume(doc.id);
                       }}
                     >
                       <Trash2 className="w-4 h-4" />

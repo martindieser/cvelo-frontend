@@ -1,11 +1,26 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-const LoadingScreen = () => {
+interface LoadingScreenProps {
+  fullScreen?: boolean;
+  message?: string;
+}
+
+const LoadingScreen = ({ 
+  fullScreen = true, 
+  message = "cargando"
+}: LoadingScreenProps) => {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background">
+    <div className={cn(
+      "flex flex-col items-center justify-center bg-background",
+      fullScreen ? "fixed inset-0 z-[9999]" : "w-full h-full min-h-[400px]"
+    )}>
       <div className="flex flex-col items-center">
         {/* Logo con rotación y escalado */}
-        <div className="w-32 h-32 flex items-center justify-center animate-logo-combined">
+        <div className={cn(
+          "flex items-center justify-center animate-logo-combined",
+          fullScreen ? "w-32 h-32" : "w-20 h-20"
+        )}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 200 220"
@@ -31,9 +46,12 @@ const LoadingScreen = () => {
         </div>
 
         {/* Texto cargando.... */}
-        <div className="mt-12">
-          <p className="text-xl font-medium text-muted-foreground tracking-tight">
-            cargando<span className="animate-dot-1">.</span><span className="animate-dot-2">.</span><span className="animate-dot-3">.</span><span className="animate-dot-4">.</span>
+        <div className={cn(fullScreen ? "mt-12" : "mt-6")}>
+          <p className={cn(
+            "font-medium text-muted-foreground tracking-tight",
+            fullScreen ? "text-xl" : "text-base"
+          )}>
+            {message}<span className="animate-dot-1">.</span><span className="animate-dot-2">.</span><span className="animate-dot-3">.</span><span className="animate-dot-4">.</span>
           </p>
         </div>
       </div>

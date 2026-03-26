@@ -24,7 +24,10 @@ import PersonalInfo from "@/components/dashboard/PersonalInfo";
 import MyDocuments from "@/components/dashboard/MyDocuments";
 import Settings from "@/components/dashboard/Settings";
 import BuyCredits from "@/components/dashboard/BuyCredits";
-import { UserProfileViewModel, TailoredResumeViewModel, UserSettingsViewModel, AdaptedResumeViewModel } from "@/lib/viewmodels";
+import { AdaptedResumeViewModel } from "@/lib/viewmodels";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useTailoredResume } from "@/hooks/useTailoredResume";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("tailor");
@@ -32,124 +35,41 @@ const Dashboard = () => {
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isTailored, setIsTailored] = useState(false);
 
-  // Perfil por defecto (Master Data)
-  const [profile, setProfile] = useState<UserProfileViewModel>({
-    name: "Juan Pérez",
-    email: "juan.perez@email.com",
-    location: "Madrid, España",
-    phone: "+34 600 000 000",
-    summary: "Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, APIs y herramientas de monitoreo para aportar en entornos dinámicos y desafiantes.",
-    skills: ["React", "TypeScript", "Node.js", "SQL", "Git", "Customer Service", "POS Management"],
-    socialLinks: [
-      { id: "1", platform: "LinkedIn", url: "https://linkedin.com/in/juanperez" },
-      { id: "2", platform: "Portfolio", url: "https://juanperez.dev" }
-    ],
-    experience: [
-      { 
-        id: "1", 
-        role: "Cajero", 
-        company: "Large Ducks Coffee", 
-        period: "Junio 2023 – Actualidad",
-        details: "Operé la caja registradora POS para cobrar a clientes y entregar cambio con precisión mientras preparaba alimentos y bebidas.\nManejé horarios de alta demanda mediante la multitarea y un servicio al cliente consistente.\nUtilicé una computadora de escritorio para gestionar correo electrónico interno y completar capacitaciones en línea."
-      }
-    ],
-    education: [
-      { id: "1", degree: "Bachillerato", institution: "Instituto Tecnológico", period: "2019 - 2021" }
-    ],
-    languages: [
-      { id: "1", name: "Español", level: "Nativo" },
-      { id: "2", name: "Inglés", level: "B2 - Intermedio Alto" }
-    ],
-    certificates: ["Certificado de Atención al Cliente", "Google Cloud Digital Leader"],
-    settings: {
-      language: "auto",
-      tone: "professional",
-      template: "modern",
-      sectionsOrder: [
-        { id: "resumen", name: "Resumen" },
-        { id: "experiencia", name: "Experiencia" },
-        { id: "educacion", name: "Educación" },
-        { id: "skills", name: "Habilidades" },
-        { id: "lenguajes", name: "Idiomas" },
-        { id: "certificados", name: "Certificados" },
-      ]
-    },
-    adaptedResumes: [
-      { id: "1", companyName: "Mercado Libre", resumeName: "CV Frontend Dev - ML", date: "24/03/2026" },
-    ]
-  });
+  const { profile, loading: profileLoading } = useUserProfile();
+  const { 
+    tailoredResume, 
+    generating: tailoringGenerating, 
+    loading: tailoringLoading,
+    generateResume, 
+    fetchTailoredResume,
+    clearTailoredResume 
+  } = useTailoredResume();
 
-  // Estado para el CV adaptado (ViewModel completo)
-  const [tailoredData, setTailoredData] = useState<TailoredResumeViewModel>({
-    id: "1",
-    jobName: "Frontend Developer",
-    companyName: "Mercado Libre",
-    date: "24/03/2026",
-    optimizedSummary: "Cajero con experiencia en atención al cliente y gestión operativa, buscando iniciar mi carrera como Frontend Developer. Poseo conocimientos sólidos en React, TypeScript y APIs. Mi enfoque se centra en la eficiencia y la resolución de problemas técnicos en entornos de alto rendimiento.",
-    optimizedExperience: [
-      { 
-        id: "1", 
-        role: "Cajero (Enfoque en Procesos Técnicos)", 
-        company: "Large Ducks Coffee", 
-        period: "Junio 2023 – Actualidad",
-        details: "Gestioné transacciones complejas utilizando sistemas POS, optimizando el tiempo de respuesta al cliente.\nColaboré en la resolución de incidencias técnicas básicas del sistema de ventas.\nUtilicé herramientas digitales internas para la gestión de inventario y comunicación corporativa."
-      }
-    ],
-    optimizedSkills: ["React", "TypeScript", "Node.js", "Tailwind CSS", "APIs", "Git", "Agile"],
-    optimizedEducation: [
-      { id: "1", degree: "Bachillerato (Orientación Tecnológica)", institution: "Instituto Tecnológico", period: "2019 - 2021" }
-    ],
-    optimizedLanguages: [
-      { id: "1", name: "Español", level: "Nativo" },
-      { id: "2", name: "Inglés", level: "B2 - Técnico" }
-    ],
-    optimizedCertificates: ["Google Cloud Digital Leader", "Certificado de Desarrollo Web"],
-    detectedKeywords: ["React", "TypeScript", "APIs", "Eficiencia", "Frontend"],
-    appliedChanges: [
-      { section: "Resumen", description: "Se reenfocó el resumen para destacar el interés en Frontend y mencionar habilidades técnicas clave." },
-      { section: "Experiencia", description: "Se ajustaron los logros en Large Ducks para resaltar el manejo de sistemas y procesos técnicos." },
-      { section: "Habilidades", description: "Se priorizaron las tecnologías web y se añadieron metodologías ágiles relevantes para el puesto." }
-    ],
-    baseProfile: profile
-  });
-
-  const handleAdaptCV = (description: string) => {
-    console.log("Adaptando CV con descripción:", description);
-    setTailoredData({
-      ...tailoredData,
-      jobName: "Nuevo Puesto Adaptado",
-      companyName: "Empresa Destino"
-    });
+  const handleAdaptCV = async (description: string) => {
+    if (!profile) return;
+    await generateResume(description, profile);
     setIsTailored(true);
   };
 
-  const handleViewDocument = (doc: AdaptedResumeViewModel) => {
-    setTailoredData({
-      ...tailoredData,
-      id: doc.id,
-      companyName: doc.companyName,
-      jobName: doc.resumeName
-    });
+  const handleViewDocument = async (doc: AdaptedResumeViewModel) => {
+    if (!profile) return;
+    await fetchTailoredResume(doc.id, profile);
     setIsTailored(true);
     setActiveTab("tailor");
   };
 
   const handleBackToTailor = () => {
     setIsTailored(false);
+    clearTailoredResume();
   };
 
   const handleNewAdapt = () => {
     setIsTailored(false);
+    clearTailoredResume();
     setActiveTab("tailor");
   };
 
-  const handleSaveSettings = (newSettings: UserSettingsViewModel) => {
-    setProfile(prev => ({
-      ...prev,
-      settings: newSettings
-    }));
-    console.log("Settings actualizadas en el perfil global:", newSettings);
-  };
+  const isLoading = tailoringLoading || (activeTab === "tailor" && isTailored && !tailoredResume && !tailoringGenerating);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
@@ -174,35 +94,34 @@ const Dashboard = () => {
           <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-8">
             
             {activeTab === "tailor" ? (
-              !isTailored ? (
+              tailoringGenerating || isLoading ? (
+                <LoadingScreen 
+                  fullScreen={false} 
+                  message={tailoringGenerating ? "CurriAI está analizando la oferta y adaptando tu CV" : "Cargando documento"} 
+                />
+              ) : !isTailored || !tailoredResume ? (
                 <TailorCV onAdapt={handleAdaptCV} />
               ) : (
                 <>
                   {/* CENTRAL RESUME VIEW */}
                   <ResumePreview 
                     onBack={handleBackToTailor} 
-                    data={tailoredData}
+                    data={tailoredResume}
                   />
 
                   {/* RIGHT PANEL */}
                   <InsightsPanel 
-                    keywords={tailoredData.detectedKeywords} 
-                    changes={tailoredData.appliedChanges} 
+                    keywords={tailoredResume.detectedKeywords} 
+                    changes={tailoredResume.appliedChanges} 
                   />
                 </>
               )
             ) : activeTab === "info" ? (
               <PersonalInfo />
             ) : activeTab === "docs" ? (
-              <MyDocuments 
-                initialDocuments={profile.adaptedResumes} 
-                onView={handleViewDocument} 
-              />
+              <MyDocuments onView={handleViewDocument} />
             ) : activeTab === "settings" ? (
-              <Settings 
-                settings={profile.settings} 
-                onSave={handleSaveSettings} 
-              />
+              <Settings />
             ) : (
               <div className="flex-1 flex items-center justify-center h-[60vh] text-muted-foreground border-2 border-dashed border-border rounded-3xl">
                 Sección {activeTab} en desarrollo...
