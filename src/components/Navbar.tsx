@@ -10,7 +10,7 @@ const Navbar = () => {
           <img src={logoMascot} alt="CurriAI Logo" className="w-full h-full object-contain" />
         </div>
       </Link>
-      <CTAButton variant="outline" className="rounded-full px-6 border-border hover:bg-muted">
+      <CTAButton to="/login" variant="outline" className="rounded-full px-6 border-border hover:bg-muted">
         Iniciar sesión
       </CTAButton>
     </nav>
