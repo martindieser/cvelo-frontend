@@ -62,13 +62,15 @@ export const SidebarContent = ({ activeTab, setActiveTab }: SidebarProps) => (
       </button>
 
       <div className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Sistema
+      Sistema
       </div>
-      <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
-        <Settings className="w-4 h-4" />
-        Configuración
-      </button>
-      <Link to="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+      <button 
+      onClick={() => setActiveTab("settings")}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+      >
+      <Settings className="w-4 h-4" />
+      Configuración
+      </button>      <Link to="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
         <LogOut className="w-4 h-4" />
         Cerrar sesión
       </Link>
