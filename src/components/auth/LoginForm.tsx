@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LoginFormProps {
   onToggle: () => void;
@@ -12,16 +13,17 @@ interface LoginFormProps {
 const LoginForm = ({ onToggle }: LoginFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate("/");
-    }, 1500);
+    try {
+      await login({ email, password });
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   return (
@@ -57,9 +59,9 @@ const LoginForm = ({ onToggle }: LoginFormProps) => {
       <Button 
         type="submit" 
         className="w-full py-6 text-lg font-bold rounded-lg mt-2" 
-        disabled={isLoading}
+        disabled={loading}
       >
-        {isLoading ? (
+        {loading ? (
           <>
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Iniciando sesión...

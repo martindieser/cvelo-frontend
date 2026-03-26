@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RegisterFormProps {
   onToggle: () => void;
@@ -13,15 +14,16 @@ const RegisterForm = ({ onToggle, onSuccess }: RegisterFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, loading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await register({ name: "Nuevo Usuario", email, password });
       onSuccess(email);
-    }, 1500);
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
   };
 
   return (
@@ -63,9 +65,9 @@ const RegisterForm = ({ onToggle, onSuccess }: RegisterFormProps) => {
       <Button 
         type="submit" 
         className="w-full py-6 text-lg font-bold rounded-lg mt-2" 
-        disabled={isLoading}
+        disabled={loading}
       >
-        {isLoading ? (
+        {loading ? (
           <>
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Creando cuenta...

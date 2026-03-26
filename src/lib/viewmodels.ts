@@ -3,6 +3,14 @@
  * These structures represent the data exactly as it is consumed and displayed by the frontend components.
  */
 
+// --- Auth & Session ViewModels ---
+
+export interface AuthUserViewModel {
+  id: string;
+  name: string;
+  email: string;
+}
+
 // --- Dashboard & User Data ViewModels ---
 
 export interface SocialLinkViewModel {
@@ -53,6 +61,8 @@ export interface UserSettingsViewModel {
 export interface UserProfileViewModel {
   name: string;
   email: string;
+  avatar?: string;
+  credits: number;
   location: string;
   phone: string;
   summary: string;
