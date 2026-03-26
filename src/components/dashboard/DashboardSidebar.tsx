@@ -12,81 +12,91 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logoMascot from "@/assets/logo-mascot.svg";
 
+import { useAuth } from "@/hooks/useAuth";
+
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onPricingClick?: () => void;
 }
 
-export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => (
-  <div className="flex flex-col h-full">
-    <div className="p-6 flex justify-center">
-      <Link to="/" className="group">
-        <div className="w-24 h-24 transition-transform group-hover:scale-110">
-          <img src={logoMascot} alt="Logo" className="w-full h-full object-contain" />
+export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => {
+  const { logout } = useAuth();
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="p-6 flex justify-center">
+        <Link to="/" className="group">
+          <div className="w-24 h-24 transition-transform group-hover:scale-110">
+            <img src={logoMascot} alt="Logo" className="w-full h-full object-contain" />
+          </div>
+        </Link>
+      </div>
+
+      <div className="px-4 mb-4">
+        <Button 
+          onClick={onPricingClick}
+          className="w-full justify-start gap-2 bg-primary/90 hover:bg-primary text-primary-foreground font-bold rounded-xl py-6 shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Plan Pro Ilimitado</span>
+        </Button>
+      </div>
+
+      <nav className="flex-1 px-2 space-y-1">
+        <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Principal
         </div>
-      </Link>
-    </div>
+        <button 
+          onClick={() => setActiveTab("tailor")}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "tailor" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          Adaptar CV
+        </button>
+        <button 
+          onClick={() => setActiveTab("info")}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "info" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          <User className="w-4 h-4" />
+          Información Personal
+        </button>
+        <button 
+          onClick={() => setActiveTab("docs")}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "docs" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        >
+          <FileText className="w-4 h-4" />
+          Mis Documentos
+        </button>
 
-    <div className="px-4 mb-4">
-      <Button 
-        onClick={onPricingClick}
-        className="w-full justify-start gap-2 bg-primary/90 hover:bg-primary text-primary-foreground font-bold rounded-xl py-6 shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-      >
-        <Sparkles className="w-4 h-4" />
-        <span>Plan Pro Ilimitado</span>
-      </Button>
-    </div>
+        <div className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Sistema
+        </div>
+        <button 
+        onClick={() => setActiveTab("settings")}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        >
+        <Settings className="w-4 h-4" />
+        Configuración
+        </button>
+        <button 
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          Cerrar sesión
+        </button>
+      </nav>
 
-    <nav className="flex-1 px-2 space-y-1">
-      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Principal
-      </div>
-      <button 
-        onClick={() => setActiveTab("tailor")}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "tailor" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-      >
-        <LayoutDashboard className="w-4 h-4" />
-        Adaptar CV
-      </button>
-      <button 
-        onClick={() => setActiveTab("info")}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "info" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-      >
-        <User className="w-4 h-4" />
-        Información Personal
-      </button>
-      <button 
-        onClick={() => setActiveTab("docs")}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "docs" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-      >
-        <FileText className="w-4 h-4" />
-        Mis Documentos
-      </button>
-
-      <div className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-      Sistema
-      </div>
-      <button 
-      onClick={() => setActiveTab("settings")}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
-      >
-      <Settings className="w-4 h-4" />
-      Configuración
-      </button>      <Link to="/" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
-        <LogOut className="w-4 h-4" />
-        Cerrar sesión
-      </Link>
-    </nav>
-
-    <div className="p-4 border-t border-border mt-auto">
-      <div className="bg-muted/50 rounded-xl p-4 text-center">
-        <p className="text-xs text-muted-foreground mb-2">¿Necesitas ayuda?</p>
-        <a href="mailto:hola@curriai.co" className="text-xs font-bold text-primary hover:underline">hola@curriai.co</a>
+      <div className="p-4 border-t border-border mt-auto">
+        <div className="bg-muted/50 rounded-xl p-4 text-center">
+          <p className="text-xs text-muted-foreground mb-2">¿Necesitas ayuda?</p>
+          <a href="mailto:hola@curriai.co" className="text-xs font-bold text-primary hover:underline">hola@curriai.co</a>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const DashboardSidebar = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => {
   return (
