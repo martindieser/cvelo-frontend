@@ -14,6 +14,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ResumePreview from "@/components/dashboard/ResumePreview";
 import InsightsPanel from "@/components/dashboard/InsightsPanel";
 import TailorCV from "@/components/dashboard/TailorCV";
+import PersonalInfo from "@/components/dashboard/PersonalInfo";
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("tailor");
@@ -52,6 +53,8 @@ const Dashboard = () => {
                   <InsightsPanel />
                 </>
               )
+            ) : activeTab === "info" ? (
+              <PersonalInfo />
             ) : (
               <div className="flex-1 flex items-center justify-center h-[60vh] text-muted-foreground border-2 border-dashed border-border rounded-3xl">
                 Sección {activeTab} en desarrollo...
