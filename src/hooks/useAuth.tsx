@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuthUserViewModel } from "@/lib/viewmodels";
 import { LoginRequestDTO, RegisterRequestDTO } from "@/lib/dtos";
+import { apiFetch } from "@/lib/apiClient";
 
 interface AuthContextType {
   user: AuthUserViewModel | null;
@@ -13,67 +14,73 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user for simulation
-const MOCK_USER: AuthUserViewModel = {
-  id: "user_123",
-  name: "Juan Pérez",
-  email: "juan.perez@gmail.com"
-};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUserViewModel | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem("user");
+    useEffect(() => {
+      // Check for existing session
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          localStorage.removeItem("user");
+        }
       }
-    }
-    setLoading(false);
-  }, []);
+      setLoading(false);
+    }, []);
+
 
   const login = async (data: LoginRequestDTO) => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      const loggedUser = { ...MOCK_USER, email: data.email };
-      setUser(loggedUser);
-      localStorage.setItem("user", JSON.stringify(loggedUser));
-      localStorage.setItem("token", "mock_token_abc123");
+      const response = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+      const { user, token } = response;
+      setUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
     } finally {
       setLoading(false);
     }
   };
+
 
   const register = async (data: RegisterRequestDTO) => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const newUser = { 
-        id: Math.random().toString(36).substr(2, 9),
-        name: data.name,
-        email: data.email
-      };
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
-      localStorage.setItem("token", "mock_token_reg456");
+      const response = await apiFetch("/auth/register", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+
+      const { user, token } = response;
+
+      setUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
+
+  const logout = async () => {
+    try {
+      await apiFetch("/auth/logout", { method: "POST" });
+    } catch {
+      // no importa si falla
+    }
+
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
   };
+
 
   return (
     <AuthContext.Provider value={{ 
