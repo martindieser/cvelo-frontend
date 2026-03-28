@@ -55,6 +55,15 @@ export interface UserSettingsViewModel {
   sectionsOrder: SectionViewModel[];
 }
 
+export interface ProjectViewModel {
+  id: string;
+  title: string;
+  details: string;
+  technologies: string[];
+  link?: string;
+  period?: string;
+}
+
 /**
  * The base profile of the user (their "Master" data)
  */
@@ -71,6 +80,7 @@ export interface UserProfileViewModel {
   experience: WorkExperienceViewModel[];
   education: EducationViewModel[];
   languages: LanguageViewModel[];
+  projects: ProjectViewModel[];
   certificates: string[];
   settings: UserSettingsViewModel; // User settings integrated into profile
   adaptedResumes: AdaptedResumeViewModel[]; // List of historical documents
@@ -100,6 +110,7 @@ export interface TailoredResumeViewModel {
   optimizedSkills: string[];
   optimizedEducation: EducationViewModel[];
   optimizedLanguages: LanguageViewModel[];
+  optimizedProjects: ProjectViewModel[];
   optimizedCertificates: string[];
   
   // Metadata & Insights

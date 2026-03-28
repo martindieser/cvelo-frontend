@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { CheckoutResponseDTO, PaymentStatus, PaymentStatusDTO } from "@/lib/dtos";
+import { CheckoutResponseDTO, PaymentStatus, PaymentStatusDTO, CreateCheckoutRequestDTO } from "@/lib/dtos";
+import { apiFetch } from "@/lib/apiClient";
 
 export type PaymentHookStatus = "idle" | "creating" | "awaiting_payment" | "success" | "error" | "expired";
 
@@ -8,19 +9,20 @@ export function usePayment() {
   const [checkoutInfo, setCheckoutResponse] = useState<CheckoutResponseDTO | null>(null);
   const pollingInterval = useRef<NodeJS.Timeout | null>(null);
 
-  // Initial check for pending payments
-  useEffect(() => {
-    const fetchPending = async () => {
-      // In a real app: const response = await fetch('/api/payments/pending')
-      // Simulate checking for a pending payment in localStorage or API
-      const savedPending = localStorage.getItem("pending_payment");
-      if (savedPending) {
-        const info = JSON.parse(savedPending);
-        setCheckoutResponse(info);
+  const fetchPending = async () => {
+    try {
+      const data: CheckoutResponseDTO | null = await apiFetch("/payments/pending");
+      if (data) {
+        setCheckoutResponse(data);
         setStatus("awaiting_payment");
-        startPolling(info.id);
+        startPolling(data.id);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching pending payment:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchPending();
 
     return () => {
@@ -31,20 +33,15 @@ export function usePayment() {
   const createPayment = async (packId: string) => {
     setStatus("creating");
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockResponse: CheckoutResponseDTO = {
-        id: `pay_${Math.random().toString(36).substr(2, 9)}`,
-        invoice_url: "https://example.com/invoice/mock_123", 
-        qr_code: "https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg",
-        amount: 10,
-        currency: "USD"
-      };
+      const createReq: CreateCheckoutRequestDTO = { pack_id: packId };
+      const data: CheckoutResponseDTO = await apiFetch("/payments/checkout", {
+        method: "POST",
+        body: JSON.stringify(createReq),
+      });
 
-      localStorage.setItem("pending_payment", JSON.stringify(mockResponse));
-      setCheckoutResponse(mockResponse);
+      setCheckoutResponse(data);
       setStatus("awaiting_payment");
-      startPolling(mockResponse.id);
+      startPolling(data.id);
     } catch (err) {
       setStatus("error");
       console.error("Error creating payment:", err);
@@ -54,32 +51,33 @@ export function usePayment() {
   const startPolling = (paymentId: string) => {
     if (pollingInterval.current) clearInterval(pollingInterval.current);
 
-    let attempts = 0;
     pollingInterval.current = setInterval(async () => {
-      attempts++;
-      
       try {
-        // Simulate API check
-        // If we found it paid, clean up
-        const isPaid = attempts > 8; // Simulate success after some time
+        const data: PaymentStatusDTO = await apiFetch(`/payments/${paymentId}/status`);
         
-        if (isPaid) {
+        if (data.status === "approved") {
           stopPolling();
-          localStorage.removeItem("pending_payment");
           setStatus("success");
+        } else if (data.status === "expired" || data.status === "rejected" || data.status === "cancelled") {
+          stopPolling();
+          setStatus(data.status === "expired" ? "expired" : "error");
         }
       } catch (err) {
         console.error("Polling error:", err);
       }
-    }, 3000);
+    }, 5000);
   };
 
   const cancelPayment = async () => {
-    // In a real app: await fetch(`/api/payments/${checkoutInfo?.id}/cancel`, { method: 'POST' })
-    stopPolling();
-    localStorage.removeItem("pending_payment");
-    setStatus("idle");
-    setCheckoutResponse(null);
+    if (!checkoutInfo) return;
+    try {
+      await apiFetch(`/payments/${checkoutInfo.id}/cancel`, { method: "POST" });
+      stopPolling();
+      setStatus("idle");
+      setCheckoutResponse(null);
+    } catch (err) {
+      console.error("Error cancelling payment:", err);
+    }
   };
 
   const stopPolling = () => {
@@ -91,7 +89,6 @@ export function usePayment() {
 
   const resetPayment = () => {
     stopPolling();
-    localStorage.removeItem("pending_payment");
     setStatus("idle");
     setCheckoutResponse(null);
   };

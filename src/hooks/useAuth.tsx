@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { AuthUserViewModel } from "@/lib/viewmodels";
-import { LoginRequestDTO, RegisterRequestDTO } from "@/lib/dtos";
+import { LoginRequestDTO, RegisterRequestDTO, LoginResponseDTO } from "@/lib/dtos";
 import { apiFetch } from "@/lib/apiClient";
 
 interface AuthContextType {
@@ -36,13 +36,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (data: LoginRequestDTO) => {
     setLoading(true);
     try {
-      const response = await apiFetch("/auth/login", {
+      const response: LoginResponseDTO = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify(data),
       });
-      const { user, token } = response;
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
+      const { user: apiUser, token } = response;
+      
+      const userVm: AuthUserViewModel = {
+        id: apiUser.id,
+        name: apiUser.name,
+        email: apiUser.email
+      };
+
+      setUser(userVm);
+      localStorage.setItem("user", JSON.stringify(userVm));
       localStorage.setItem("token", token);
     } finally {
       setLoading(false);
@@ -53,16 +60,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (data: RegisterRequestDTO) => {
     setLoading(true);
     try {
+      // Register returns RegisterResponseDTO which doesn't include a token/user for immediate login
+      // but based on the existing mock, we want to log in. 
+      // Actually, looking at openapi.json, /auth/register returns 201 with message, user_id, email.
+      // So the user probably needs to log in after registering, or the API should be changed.
+      // For now, I'll follow the openapi and if it doesn't log in automatically, I'll just finish the call.
       const response = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
       });
 
-      const { user, token } = response;
-
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
+      // Based on OpenAPI, we don't get a token here. 
+      // We might want to automatically call login after register if the API supports it,
+      // but let's stick to the specs.
+      console.log("Register successful:", response);
+      
+      // If the user expects to be logged in, we might need to perform a login here.
+      // But RegisterResponseDTO doesn't have a password.
+      // I'll keep it simple: just register. The UI should redirect to login or show success.
     } finally {
       setLoading(false);
     }

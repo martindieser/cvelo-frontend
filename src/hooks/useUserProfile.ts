@@ -1,77 +1,136 @@
 import { useState, useEffect } from "react";
-import { UserProfileViewModel } from "@/lib/viewmodels";
-
-// Mock data (consistent with existing components)
-const mockProfile: UserProfileViewModel = {
-  name: "Juan Pérez",
-  email: "juan.perez@gmail.com",
-  credits: 5,
-  avatar: "",
-  location: "Madrid, España",
-  phone: "+34 600 000 000",
-  summary: "Cuento con más de 2 años de experiencia en atención al cliente, manejo de POS y uso básico de computadoras de escritorio, donde cumplí procesos definidos con puntualidad y responsabilidad. Busco iniciar mi trayectoria en ingeniería de software y estoy dispuesto a aprender sobre desarrollo en la nube, programación, APIs y herramientas de monitoreo para aportar en entornos dinámicos y desafiantes.",
-  skills: ["React", "TypeScript", "Node.js", "SQL", "Git", "Customer Service", "POS Management"],
-  socialLinks: [
-    { id: "1", platform: "LinkedIn", url: "https://linkedin.com/in/juanperez" },
-    { id: "2", platform: "Portfolio", url: "https://juanperez.dev" }
-  ],
-  experience: [
-    { 
-      id: "1", 
-      role: "Cajero", 
-      company: "Large Ducks Coffee", 
-      period: "Junio 2023 – Actualidad",
-      details: "Operé la caja registradora POS para cobrar a clientes y entregar cambio con precisión mientras preparaba alimentos y bebidas.\nManejé horarios de alta demanda mediante la multitarea y un servicio al cliente consistente.\nUtilicé una computadora de escritorio para gestionar correo electrónico interno y completar capacitaciones en línea."
-    }
-  ],
-  education: [
-    { id: "1", degree: "Bachillerato", institution: "Instituto Tecnológico", period: "2019 - 2021" }
-  ],
-  languages: [
-    { id: "1", name: "Español", level: "Nativo" },
-    { id: "2", name: "Inglés", level: "B2 - Intermedio Alto" }
-  ],
-  certificates: ["Certificado de Atención al Cliente", "Google Cloud Digital Leader"],
-  settings: {
-    language: "auto",
-    tone: "professional",
-    template: "modern",
-    sectionsOrder: [
-      { id: "resumen", name: "Resumen" },
-      { id: "experiencia", name: "Experiencia" },
-      { id: "educacion", name: "Educación" },
-      { id: "skills", name: "Habilidades" },
-      { id: "lenguajes", name: "Idiomas" },
-      { id: "certificados", name: "Certificados" },
-    ]
-  },
-  adaptedResumes: [
-    { id: "1", companyName: "Mercado Libre", resumeName: "CV Frontend Dev - ML", date: "24/03/2026" },
-  ]
-};
+import { UserProfileViewModel, AdaptedResumeViewModel } from "@/lib/viewmodels";
+import { UserProfileDTO, UpdateUserProfileRequestDTO, ExperienceItemDTO, EducationItemDTO, LanguageItemDTO, SocialLinkDTO } from "@/lib/dtos";
+import { apiFetch } from "@/lib/apiClient";
 
 export function useUserProfile() {
   const [profile, setProfile] = useState<UserProfileViewModel | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulating on-demand fetch
-    const fetchProfile = async () => {
-      setLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setProfile(mockProfile);
-      setLoading(false);
-    };
+  const fetchProfile = async () => {
+    setLoading(true);
+    try {
+      const data: UserProfileDTO = await apiFetch("/users/me/profile");
+      
+      const mappedProfile: UserProfileViewModel = {
+        name: data.name ?? "",
+        email: data.email,
+        credits: data.credits,
+        avatar: data.avatar ?? "",
+        location: data.location ?? "",
+        phone: data.phone ?? "",
+        summary: data.summary ?? "",
+        skills: data.skills,
+        socialLinks: data.social_links.map((s, i) => ({ id: i.toString(), platform: s.platform, url: s.url ?? "" })),
+        experience: data.experience.map((e, i) => ({ 
+          id: i.toString(), 
+          role: e.role, 
+          company: e.company, 
+          period: e.period, 
+          details: e.details.join("\n") 
+        })),
+        education: data.education.map((edu, i) => ({ 
+          id: i.toString(), 
+          degree: edu.degree, 
+          institution: edu.institution, 
+          period: edu.period 
+        })),
+        languages: data.languages.map((l, i) => ({ 
+          id: i.toString(), 
+          name: l.name, 
+          level: l.level 
+        })),
+        projects: data.projects.map((p, i) => ({
+          id: i.toString(),
+          title: p.title,
+          details: p.details.join("\n"),
+          technologies: p.technologies ?? [],
+          link: p.link ?? "",
+          period: p.period ?? ""
+        })),
+        certificates: data.certificates,
+        settings: {
+          language: data.settings.language,
+          tone: data.settings.tone,
+          template: data.settings.template,
+          sectionsOrder: data.settings.sections_order.map(s => ({ id: s.id, name: s.id.charAt(0).toUpperCase() + s.id.slice(1) }))
+        },
+        adaptedResumes: data.adapted_resumes.map(r => ({
+          id: r.id,
+          companyName: r.company_name,
+          resumeName: r.job_name,
+          date: r.date
+        }))
+      };
 
+      setProfile(mappedProfile);
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProfile();
   }, []);
 
   const updateProfile = async (newProfile: Partial<UserProfileViewModel>) => {
-    // Simulate API update
+    // Optimistic update
+    const previousProfile = profile;
     setProfile(prev => prev ? { ...prev, ...newProfile } : null);
-    console.log("Profile updated:", newProfile);
+
+    try {
+      const updateReq: UpdateUserProfileRequestDTO = {};
+      if (newProfile.name !== undefined) updateReq.name = newProfile.name;
+      if (newProfile.avatar !== undefined) updateReq.avatar = newProfile.avatar;
+      if (newProfile.location !== undefined) updateReq.location = newProfile.location;
+      if (newProfile.phone !== undefined) updateReq.phone = newProfile.phone;
+      if (newProfile.summary !== undefined) updateReq.summary = newProfile.summary;
+      if (newProfile.skills !== undefined) updateReq.skills = newProfile.skills;
+      if (newProfile.certificates !== undefined) updateReq.certificates = newProfile.certificates;
+      
+      if (newProfile.socialLinks !== undefined) {
+        updateReq.social_links = newProfile.socialLinks.map(s => ({ platform: s.platform, url: s.url }));
+      }
+      
+      if (newProfile.experience !== undefined) {
+        updateReq.experience = newProfile.experience.map(e => ({ 
+          role: e.role, 
+          company: e.company, 
+          period: e.period, 
+          details: e.details.split("\n") 
+        }));
+      }
+
+      if (newProfile.education !== undefined) {
+        updateReq.education = newProfile.education.map(edu => ({ 
+          degree: edu.degree, 
+          institution: edu.institution, 
+          period: edu.period 
+        }));
+      }
+
+      if (newProfile.languages !== undefined) {
+        updateReq.languages = newProfile.languages.map(l => ({ 
+          name: l.name, 
+          level: l.level 
+        }));
+      }
+
+      await apiFetch("/users/me/profile", {
+        method: "PATCH",
+        body: JSON.stringify(updateReq),
+      });
+      
+      // Refresh to ensure we have the latest from server
+      await fetchProfile();
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      // Rollback
+      setProfile(previousProfile);
+    }
   };
 
-  return { profile, updateProfile, loading };
+  return { profile, updateProfile, loading, refreshProfile: fetchProfile };
 }
