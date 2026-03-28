@@ -43,6 +43,7 @@ export interface LanguageViewModel {
 export interface SectionViewModel {
   id: string;
   name: string;
+  visible?: boolean;
 }
 
 /**
