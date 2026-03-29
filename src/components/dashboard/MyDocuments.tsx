@@ -19,6 +19,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 
 import { AdaptedResumeViewModel } from "@/lib/viewmodels";
@@ -40,6 +50,10 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState<AdaptedResumeViewModel | null>(null);
   const [tempNames, setTempNames] = useState({ company: "", resume: "" });
+
+  // Estado para eliminación
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [docToDelete, setDocToDelete] = useState<AdaptedResumeViewModel | null>(null);
 
   if (loading) {
     return <LoadingScreen fullScreen={false} message="Cargando tus documentos" />;
@@ -68,6 +82,19 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
         resumeName: tempNames.resume 
       });
       setIsEditDialogOpen(false);
+    }
+  };
+
+  const openDeleteDialog = (doc: AdaptedResumeViewModel) => {
+    setDocToDelete(doc);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (docToDelete) {
+      deleteResume(docToDelete.id);
+      setIsDeleteDialogOpen(false);
+      setDocToDelete(null);
     }
   };
 
@@ -141,7 +168,7 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
                       className="rounded-xl hover:bg-destructive/10 hover:text-destructive h-10 w-10"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteResume(doc.id);
+                        openDeleteDialog(doc);
                       }}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -239,6 +266,30 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* DIÁLOGO DE CONFIRMACIÓN DE ELIMINACIÓN */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent className="rounded-2xl w-[90vw] max-w-md border-border font-body">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-left">¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription className="text-left">
+              Esta acción no se puede deshacer. Se eliminará permanentemente el documento 
+              <span className="font-bold text-foreground"> "{docToDelete?.resumeName}"</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold mt-0">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="rounded-xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar documento
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
