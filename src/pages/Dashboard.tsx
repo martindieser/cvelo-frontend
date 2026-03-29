@@ -75,13 +75,12 @@ const Dashboard = () => {
     if (!profile) return;
     await fetchTailoredResume(doc.id, profile);
     setIsTailored(true);
-    setActiveTab("tailor");
+    // No cambiamos la pestaña, nos quedamos en "docs"
   };
 
   const handleBackToTailor = () => {
     setIsTailored(false);
     clearTailoredResume();
-    setActiveTab("docs");
   };
 
   const handleNewAdapt = () => {
@@ -90,14 +89,19 @@ const Dashboard = () => {
     setActiveTab("tailor");
   };
 
-  const isLoading = tailoringLoading || (activeTab === "tailor" && isTailored && !tailoredResume && !tailoringGenerating && !tailoringError);
+  const isLoading = tailoringLoading || (isTailored && !tailoredResume && !tailoringGenerating && !tailoringError);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
       {/* SIDEBAR */}
       <DashboardSidebar 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          // Si cambiamos de pestaña manualmente, cerramos la vista de un CV específico
+          setIsTailored(false);
+          clearTailoredResume();
+        }} 
         onPricingClick={() => setIsPricingOpen(true)}
       />
 
@@ -114,7 +118,7 @@ const Dashboard = () => {
         <div className="flex-1 overflow-y-auto p-2 lg:p-8">
           <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-4 lg:gap-8">
             
-            {activeTab === "tailor" ? (
+            {isTailored ? (
               tailoringGenerating || isLoading ? (
                 <LoadingScreen 
                   fullScreen={false} 
@@ -146,9 +150,7 @@ const Dashboard = () => {
                     </AlertDescription>
                   </Alert>
                 </div>
-              ) : !isTailored || !tailoredResume ? (
-                <TailorCV onAdapt={handleAdaptCV} />
-              ) : (
+              ) : tailoredResume ? (
                 <>
                   {/* CENTRAL RESUME VIEW */}
                   <ResumePreview 
@@ -162,11 +164,14 @@ const Dashboard = () => {
                   <InsightsPanel 
                     keywords={tailoredResume.detectedKeywords} 
                     changes={tailoredResume.appliedChanges} 
+                    optimizedSkills={tailoredResume.optimizedSkills}
                     activeHighlight={activeHighlight}
                     onHighlightClick={setActiveHighlight}
                   />
                 </>
-              )
+              ) : null
+            ) : activeTab === "tailor" ? (
+              <TailorCV onAdapt={handleAdaptCV} />
             ) : activeTab === "info" ? (
               <PersonalInfo />
             ) : activeTab === "docs" ? (
