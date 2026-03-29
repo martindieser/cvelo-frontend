@@ -2,24 +2,16 @@ import { useState } from "react";
 import { 
   Search, 
   FileText, 
-  Download, 
   Trash2, 
   Pencil, 
   ChevronLeft, 
   ChevronRight,
-  MoreVertical,
   Calendar,
   Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -131,10 +123,6 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
-                  <Button variant="outline" size="sm" className="gap-2 rounded-xl font-bold h-10 border-border hover:bg-muted hidden md:flex">
-                    <Download className="w-4 h-4" /> Descargar
-                  </Button>
-                  
                   <div className="flex items-center gap-1">
                     <Button 
                       variant="ghost" 
@@ -158,21 +146,6 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                    
-                    <div className="md:hidden">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-xl border-border">
-                          <DropdownMenuItem className="gap-2 font-medium">
-                            <Download className="w-4 h-4" /> Descargar PDF
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
                   </div>
                 </div>
               </CardContent>

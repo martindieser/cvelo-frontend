@@ -62,20 +62,24 @@ const Dashboard = () => {
 
   const handleAdaptCV = async (description: string) => {
     if (!profile) return;
+    setIsTailored(true); // Mostrar pantalla de carga/vista previa inmediatamente
     try {
       await generateResume(description, profile);
-      setIsTailored(true);
     } catch (err) {
       console.error("Failed to generate resume", err);
-      setIsTailored(false);
+      // No ponemos isTailored en false aquí para permitir que se muestre el tailoringError en la UI
     }
   };
 
   const handleViewDocument = async (doc: AdaptedResumeViewModel) => {
     if (!profile) return;
-    await fetchTailoredResume(doc.id, profile);
-    setIsTailored(true);
-    // No cambiamos la pestaña, nos quedamos en "docs"
+    setIsTailored(true); // Mostrar pantalla de carga inmediatamente
+    try {
+      await fetchTailoredResume(doc.id, profile);
+    } catch (err) {
+      console.error("Failed to fetch resume", err);
+      // No ponemos isTailored en false aquí para permitir que se muestre el error en la UI
+    }
   };
 
   const handleBackToTailor = () => {
