@@ -58,6 +58,7 @@ export const InsightsContent = ({
               <p className="text-xs text-muted-foreground leading-relaxed pl-3 border-l-2 border-primary/30">
                 {change.description}
               </p>
+              {/* 
               <div className="flex items-center gap-3 pt-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">¿Te sirvió?</span>
                 <div className="flex gap-2">
@@ -65,6 +66,7 @@ export const InsightsContent = ({
                   <button className="p-1.5 rounded-lg border border-border hover:border-destructive/50 text-muted-foreground hover:text-destructive transition-all">👎</button>
                 </div>
               </div>
+              */}
             </CardContent>
           </Card>
         ))}

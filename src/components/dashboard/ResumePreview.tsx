@@ -87,6 +87,7 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
               <Pencil className="w-4 h-4" />
             </button>
           </div>
+          {/* 
           <div className="flex items-center gap-2">
             <button className="flex-1 sm:flex-none p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors flex justify-center">
               <Check className="w-5 h-5" />
@@ -95,6 +96,7 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
               <X className="w-5 h-5" />
             </button>
           </div>
+          */}
         </div>
       </div>
 
