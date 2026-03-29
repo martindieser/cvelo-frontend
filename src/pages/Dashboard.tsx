@@ -98,8 +98,8 @@ const Dashboard = () => {
         />
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-8">
-          <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-8">
+        <div className="flex-1 overflow-y-auto p-2 lg:p-8">
+          <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-4 lg:gap-8">
             
             {activeTab === "tailor" ? (
               tailoringGenerating || isLoading ? (

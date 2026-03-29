@@ -29,7 +29,7 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
   } = data;
 
   return (
-    <div className="flex-1 w-full max-w-5xl mx-auto space-y-6">
+    <div className="flex-1 w-full max-w-5xl mx-auto space-y-4 md:space-y-6">
       <div className="flex items-center justify-between gap-4">
         <button 
           onClick={onBack}
@@ -99,7 +99,7 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
       </div>
 
       {/* RENDERIZADO DEL PDF REAL */}
-      <div className="h-[calc(100vh-350px)] min-h-[600px] w-full">
+      <div className="h-[75vh] md:h-[calc(100vh-320px)] w-full">
         <PDFViewer url={pdfUrl} highlights={activeHighlight ? [activeHighlight] : []} />
       </div>
     </div>
