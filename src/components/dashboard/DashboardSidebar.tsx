@@ -26,7 +26,11 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 flex justify-center">
-        <Link to="/" className="group">
+        <Link 
+          to="/dashboard" 
+          className="group"
+          onClick={() => setActiveTab("tailor")}
+        >
           <div className="w-24 h-24 transition-transform group-hover:scale-110">
             <img src={logoMascot} alt="Logo" className="w-full h-full object-contain" />
           </div>

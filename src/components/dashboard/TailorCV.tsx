@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Sparkles, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 interface TailorCVProps {
   onAdapt: (description: string) => void;
+  description: string;
+  setDescription: (value: string) => void;
 }
 
-const TailorCV = ({ onAdapt }: TailorCVProps) => {
-  const [description, setDescription] = useState("");
+const TailorCV = ({ onAdapt, description, setDescription }: TailorCVProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

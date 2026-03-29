@@ -40,6 +40,7 @@ const Dashboard = () => {
   const [isTailored, setIsTailored] = useState(false);
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const [docsPage, setDocsPage] = useState(1);
+  const [jobDescription, setJobDescription] = useState("");
 
   const { profile, loading: profileLoading } = useUserProfile();
   const { status: paymentStatus } = usePayment();
@@ -175,7 +176,11 @@ const Dashboard = () => {
                 </>
               ) : null
             ) : activeTab === "tailor" ? (
-              <TailorCV onAdapt={handleAdaptCV} />
+              <TailorCV 
+                onAdapt={handleAdaptCV} 
+                description={jobDescription} 
+                setDescription={setJobDescription} 
+              />
             ) : activeTab === "info" ? (
               <PersonalInfo />
             ) : activeTab === "docs" ? (
