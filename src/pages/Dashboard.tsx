@@ -15,6 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, RefreshCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ResumePreview from "@/components/dashboard/ResumePreview";
@@ -49,15 +52,23 @@ const Dashboard = () => {
     tailoredResume, 
     generating: tailoringGenerating, 
     loading: tailoringLoading,
+    error: tailoringError,
+    currentTaskId,
     generateResume, 
     fetchTailoredResume,
-    clearTailoredResume 
+    clearTailoredResume,
+    clearError
   } = useTailoredResume();
 
   const handleAdaptCV = async (description: string) => {
     if (!profile) return;
-    await generateResume(description, profile);
-    setIsTailored(true);
+    try {
+      await generateResume(description, profile);
+      setIsTailored(true);
+    } catch (err) {
+      console.error("Failed to generate resume", err);
+      setIsTailored(false);
+    }
   };
 
   const handleViewDocument = async (doc: AdaptedResumeViewModel) => {
@@ -79,7 +90,7 @@ const Dashboard = () => {
     setActiveTab("tailor");
   };
 
-  const isLoading = tailoringLoading || (activeTab === "tailor" && isTailored && !tailoredResume && !tailoringGenerating);
+  const isLoading = tailoringLoading || (activeTab === "tailor" && isTailored && !tailoredResume && !tailoringGenerating && !tailoringError);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
@@ -109,6 +120,32 @@ const Dashboard = () => {
                   fullScreen={false} 
                   message={tailoringGenerating ? "CurriAI está analizando la oferta y adaptando tu CV" : "Cargando documento"} 
                 />
+              ) : tailoringError ? (
+                <div className="flex-1 max-w-2xl mx-auto py-12">
+                  <Alert variant="destructive" className="rounded-2xl border-destructive/20 bg-destructive/5 p-6">
+                    <AlertCircle className="h-6 w-6" />
+                    <AlertTitle className="text-lg font-bold ml-2">Error al adaptar CV</AlertTitle>
+                    <AlertDescription className="mt-4 space-y-4">
+                      <p className="text-base">
+                        {tailoringError}
+                      </p>
+                      <div className="bg-background/50 p-4 rounded-xl border border-destructive/10">
+                        <p className="text-xs font-bold uppercase tracking-wider opacity-70">ID de la tarea:</p>
+                        <p className="font-mono text-sm break-all">{currentTaskId || "No disponible"}</p>
+                      </div>
+                      <p className="text-sm opacity-80">
+                        Por favor, contacta al administrador del sitio con el ID de la tarea mencionado arriba para que podamos ayudarte.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        onClick={handleNewAdapt}
+                        className="mt-2 rounded-xl font-bold border-destructive/20 hover:bg-destructive/10 text-destructive h-11 px-6 gap-2"
+                      >
+                        <RefreshCcw className="w-4 h-4" /> Intentar de nuevo
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                </div>
               ) : !isTailored || !tailoredResume ? (
                 <TailorCV onAdapt={handleAdaptCV} />
               ) : (
