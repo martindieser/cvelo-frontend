@@ -81,11 +81,8 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
           CV ADAPTADO PARA
         </span>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl lg:text-4xl font-bold tracking-tight truncate max-w-[250px] lg:max-w-none">{jobName}</h1>
-            <button className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors shrink-0">
-              <Pencil className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-3 min-w-0">
+            <h1 className="text-2xl lg:text-4xl font-bold tracking-tight truncate">{jobName}</h1>
           </div>
           {/* 
           <div className="flex items-center gap-2">
