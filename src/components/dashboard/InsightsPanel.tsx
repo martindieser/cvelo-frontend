@@ -6,9 +6,16 @@ import { AppliedChangeViewModel } from "@/lib/viewmodels";
 interface InsightsContentProps {
   keywords: string[];
   changes: AppliedChangeViewModel[];
+  activeHighlight?: string | null;
+  onHighlightClick?: (kw: string | null) => void;
 }
 
-export const InsightsContent = ({ keywords, changes }: InsightsContentProps) => (
+export const InsightsContent = ({ 
+  keywords, 
+  changes, 
+  activeHighlight, 
+  onHighlightClick 
+}: InsightsContentProps) => (
   <div className="space-y-6 pb-20 lg:pb-0 font-body">
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-1">
@@ -17,7 +24,15 @@ export const InsightsContent = ({ keywords, changes }: InsightsContentProps) => 
       </div>
       <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap gap-2 shadow-sm">
         {keywords.map((kw, i) => (
-          <Badge key={i} className="bg-primary/10 text-primary hover:bg-primary/20 border-none px-3 py-1 rounded-full font-bold">
+          <Badge 
+            key={i} 
+            className={`cursor-pointer transition-all px-3 py-1 rounded-full font-bold border-none ${
+              activeHighlight === kw 
+                ? "bg-primary text-primary-foreground scale-105 shadow-md" 
+                : "bg-primary/10 text-primary hover:bg-primary/20"
+            }`}
+            onClick={() => onHighlightClick?.(activeHighlight === kw ? null : kw)}
+          >
             {kw}
           </Badge>
         ))}
@@ -61,12 +76,19 @@ export const InsightsContent = ({ keywords, changes }: InsightsContentProps) => 
 interface InsightsPanelProps {
   keywords: string[];
   changes: AppliedChangeViewModel[];
+  activeHighlight?: string | null;
+  onHighlightClick?: (kw: string | null) => void;
 }
 
-const InsightsPanel = ({ keywords, changes }: InsightsPanelProps) => {
+const InsightsPanel = ({ keywords, changes, activeHighlight, onHighlightClick }: InsightsPanelProps) => {
   return (
     <aside className="hidden xl:block w-80 shrink-0 sticky top-8 h-fit text-left">
-      <InsightsContent keywords={keywords} changes={changes} />
+      <InsightsContent 
+        keywords={keywords} 
+        changes={changes} 
+        activeHighlight={activeHighlight}
+        onHighlightClick={onHighlightClick}
+      />
     </aside>
   );
 };

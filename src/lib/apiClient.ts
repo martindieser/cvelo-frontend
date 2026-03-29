@@ -1,6 +1,15 @@
 // src/lib/apiClient.ts
 const API_URL = import.meta.env.VITE_API_URL;
 
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+    this.name = "ApiError";
+  }
+}
+
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem("token");
 
@@ -11,7 +20,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
-    credentials: "include", // por si después usás cookies
+    credentials: "include",
   });
 
   if (!res.ok) {
@@ -19,8 +28,16 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     }
-    throw new Error(`API error ${res.status}`);
+    throw new ApiError(`API error ${res.status}`, res.status);
   }
 
-  return res.json();
+  // Handle empty responses (like 204 No Content)
+  if (res.status === 204) return null;
+  
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return res.json();
+  }
+  
+  return res.text();
 };

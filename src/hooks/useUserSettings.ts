@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { UserSettingsViewModel } from "@/lib/viewmodels";
 import { UserSettingsDTO, UpdateUserSettingsRequestDTO } from "@/lib/dtos";
-import { apiFetch } from "@/lib/apiClient";
+import { useApi } from "./useApi";
 
 const SECTION_NAME_MAP: Record<string, string> = {
   summary: "Resumen",
@@ -14,13 +14,14 @@ const SECTION_NAME_MAP: Record<string, string> = {
 };
 
 export function useUserSettings() {
+  const { apiCall } = useApi();
   const [settings, setSettings] = useState<UserSettingsViewModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const data: UserSettingsDTO = await apiFetch("/users/me/settings");
+      const data: UserSettingsDTO = await apiCall("/users/me/settings");
       
       const mappedSettings: UserSettingsViewModel = {
         language: data.language,
@@ -77,7 +78,7 @@ export function useUserSettings() {
         }));
       }
 
-      await apiFetch("/users/me/settings", {
+      await apiCall("/users/me/settings", {
         method: "PATCH",
         body: JSON.stringify(updateReq),
       });

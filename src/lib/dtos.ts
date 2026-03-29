@@ -95,7 +95,6 @@ export interface UserProfileDTO {
   languages: LanguageItemDTO[];
   certificates: string[];
   settings: UserSettingsDTO;
-  adapted_resumes: AdaptedResumeDTO[];
 }
 
 export interface UpdateUserProfileRequestDTO {
@@ -138,6 +137,7 @@ export interface TailoredResumeDTO {
   job_name: string;
   company_name: string;
   date: string;
+  pdf_url: string;
   summary: string | null;
   optimized_skills: string[];
   optimized_experience: ExperienceItemDTO[];

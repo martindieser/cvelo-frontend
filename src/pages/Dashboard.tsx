@@ -35,6 +35,7 @@ const Dashboard = () => {
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isTailored, setIsTailored] = useState(false);
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
 
   const { profile, loading: profileLoading } = useUserProfile();
   const { status: paymentStatus } = usePayment();
@@ -114,12 +115,16 @@ const Dashboard = () => {
                   <ResumePreview 
                     onBack={handleBackToTailor} 
                     data={tailoredResume}
+                    activeHighlight={activeHighlight}
+                    onHighlightClick={setActiveHighlight}
                   />
 
                   {/* RIGHT PANEL */}
                   <InsightsPanel 
                     keywords={tailoredResume.detectedKeywords} 
                     changes={tailoredResume.appliedChanges} 
+                    activeHighlight={activeHighlight}
+                    onHighlightClick={setActiveHighlight}
                   />
                 </>
               )

@@ -6,22 +6,23 @@ import {
   TaskStatusDTO, 
   TailoredResumeDTO 
 } from "@/lib/dtos";
-import { apiFetch } from "@/lib/apiClient";
+import { useApi } from "./useApi";
 
 export function useTailoredResume() {
+  const { apiCall } = useApi();
   const [tailoredResume, setTailoredResume] = useState<TailoredResumeViewModel | null>(null);
   const [generating, setGenerating] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const pollTask = async (taskId: string): Promise<string> => {
+  const pollTask = async (taskId: string): Promise<TailoredResumeDTO> => {
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
         try {
-          const task: TaskStatusDTO = await apiFetch(`/resumes/tasks/${taskId}`);
+          const task: TaskStatusDTO = await apiCall(`/resumes/tasks/${taskId}`);
           if (task.status === "COMPLETED") {
             clearInterval(interval);
-            // Result for enhance/process task is the resume_id
-            resolve(task.result.resume_id || task.result.id); 
+            // The result now contains the full tailored resume object including pdf_url
+            resolve(task.result as TailoredResumeDTO); 
           } else if (task.status === "FAILED") {
             clearInterval(interval);
             reject(new Error(task.error || "Task failed"));
@@ -39,6 +40,7 @@ export function useTailoredResume() {
     jobName: dto.job_name,
     companyName: dto.company_name,
     date: dto.date,
+    pdfUrl: dto.pdf_url,
     optimizedSummary: dto.summary ?? "",
     optimizedExperience: dto.optimized_experience.map((e, i) => ({
       id: i.toString(),
@@ -80,15 +82,14 @@ export function useTailoredResume() {
     setGenerating(true);
     try {
       const enhanceReq: EnhanceResumeRequestDTO = { job_description: jobDescription };
-      const task: TaskResponseDTO = await apiFetch("/resumes/enhance", {
+      const task: TaskResponseDTO = await apiCall("/resumes/enhance", {
         method: "POST",
         body: JSON.stringify(enhanceReq),
       });
 
-      const resumeId = await pollTask(task.task_id);
-      
-      const result: TailoredResumeDTO = await apiFetch(`/resumes/${resumeId}/tailored`);
-      const mapped = mapTailoredDTO(result, profile);
+      // Polling now returns the full tailored object
+      const resultDto = await pollTask(task.task_id);
+      const mapped = mapTailoredDTO(resultDto, profile);
       
       setTailoredResume(mapped);
       return mapped;
@@ -103,7 +104,7 @@ export function useTailoredResume() {
   const fetchTailoredResume = async (id: string, profile: UserProfileViewModel) => {
     setLoading(true);
     try {
-      const result: TailoredResumeDTO = await apiFetch(`/resumes/${id}/tailored`);
+      const result: TailoredResumeDTO = await apiCall(`/resumes/${id}/tailored`);
       const mapped = mapTailoredDTO(result, profile);
       setTailoredResume(mapped);
       return mapped;

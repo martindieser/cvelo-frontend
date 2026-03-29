@@ -12,7 +12,8 @@ import {
   GraduationCap, 
   Languages, 
   Award,
-  Globe
+  Globe,
+  FolderCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,7 +33,8 @@ import {
   SocialLinkViewModel, 
   WorkExperienceViewModel, 
   EducationViewModel, 
-  LanguageViewModel 
+  LanguageViewModel,
+  ProjectViewModel
 } from "@/lib/viewmodels";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -49,6 +51,7 @@ const PersonalInfo = () => {
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isSkillOpen, setIsSkillOpen] = useState(false);
   const [isCertOpen, setIsCertOpen] = useState(false);
+  const [isProjectOpen, setIsProjectOpen] = useState(false);
 
   // Estados para edición temporal
   const [tempGeneral, setGeneral] = useState({ name: "", email: "", location: "", phone: "" });
@@ -59,6 +62,7 @@ const PersonalInfo = () => {
   const [tempLang, setTempLang] = useState<LanguageViewModel>({ id: "", name: "", level: "" });
   const [tempSkills, setTempSkills] = useState("");
   const [tempCerts, setTempCerts] = useState("");
+  const [tempProj, setTempProj] = useState<ProjectViewModel>({ id: "", title: "", details: "", technologies: [], link: "", period: "" });
 
   // Sincronizar temporales cuando el perfil carga
   useEffect(() => {
@@ -147,6 +151,19 @@ const PersonalInfo = () => {
   const saveCerts = () => {
     updateProfile({ certificates: tempCerts.split(",").map(c => c.trim()).filter(c => c !== "") });
     setIsCertOpen(false);
+  };
+
+  const saveProject = () => {
+    if (tempProj.id) {
+      updateProfile({ projects: profile.projects.map(p => p.id === tempProj.id ? tempProj : p) });
+    } else {
+      updateProfile({ projects: [...profile.projects, { ...tempProj, id: Math.random().toString() }] });
+    }
+    setIsProjectOpen(false);
+  };
+
+  const deleteProject = (id: string) => {
+    updateProfile({ projects: profile.projects.filter(p => p.id !== id) });
   };
 
   return (
@@ -356,6 +373,73 @@ const PersonalInfo = () => {
             </CardContent>
           </Card>
 
+          {/* Proyectos */}
+          <Card className="border-border shadow-sm rounded-2xl text-left">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="space-y-1">
+                <CardTitle className="text-lg font-bold">Proyectos</CardTitle>
+                <CardDescription className="text-xs">Proyectos personales o destacados.</CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-bold"
+                onClick={() => {
+                  setTempProj({ id: "", title: "", details: "", technologies: [], link: "", period: "" });
+                  setIsProjectOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" /> Agregar
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-4">
+              {profile.projects.map((proj) => (
+                <div key={proj.id} className="relative pl-6 border-l-2 border-primary/20 group pb-4 last:pb-0">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary/20 border-2 border-background" />
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-base leading-none">{proj.title}</h4>
+                      {proj.period && <p className="text-[10px] font-bold text-muted-foreground uppercase">{proj.period}</p>}
+                    </div>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => {
+                          setTempProj(proj);
+                          setIsProjectOpen(true);
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteProject(proj.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {proj.details}
+                  </div>
+                  {proj.technologies.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {proj.technologies.map((tech, i) => (
+                        <Badge key={i} variant="outline" className="text-[9px] px-2 py-0 h-5">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  {proj.link && (
+                    <a href={proj.link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary font-bold mt-2 hover:underline">
+                      <LinkIcon className="h-3 w-3" /> Ver proyecto
+                    </a>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
             {/* Educación */}
             <Card className="border-border shadow-sm rounded-2xl">
@@ -439,7 +523,7 @@ const PersonalInfo = () => {
                         <Pencil className="h-3 w-3 text-muted-foreground" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteLang(lang.id)}>
-                        <Trash2 className="h-3 w-3 text-destructive" />
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
                     </div>
                   </div>
@@ -568,6 +652,55 @@ const PersonalInfo = () => {
           <DialogFooter>
             <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsExperienceOpen(false)}>Cancelar</Button>
             <Button className="rounded-xl font-bold" onClick={saveExp}>Guardar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo Proyectos */}
+      <Dialog open={isProjectOpen} onOpenChange={setIsProjectOpen}>
+        <DialogContent className="rounded-2xl w-[90vw] max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {tempProj.id ? "Editar Proyecto" : "Agregar Proyecto"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="proj-title">Título del Proyecto</Label>
+              <Input id="proj-title" value={tempProj.title} onChange={(e) => setTempProj({...tempProj, title: e.target.value})} className="rounded-xl" placeholder="Ej: E-commerce con Next.js" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="proj-period">Período (Opcional)</Label>
+              <Input id="proj-period" value={tempProj.period} onChange={(e) => setTempProj({...tempProj, period: e.target.value})} className="rounded-xl" placeholder="Ej: 2023" />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="proj-link">URL del Proyecto / Repositorio</Label>
+              <Input id="proj-link" value={tempProj.link} onChange={(e) => setTempProj({...tempProj, link: e.target.value})} className="rounded-xl" placeholder="Ej: github.com/usuario/proyecto" />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="proj-techs">Tecnologías (separadas por coma)</Label>
+              <Input 
+                id="proj-techs" 
+                value={tempProj.technologies.join(", ")} 
+                onChange={(e) => setTempProj({...tempProj, technologies: e.target.value.split(",").map(t => t.trim()).filter(t => t !== "")})} 
+                className="rounded-xl" 
+                placeholder="Ej: React, Node.js, PostgreSQL" 
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="proj-details">Descripción del Proyecto</Label>
+              <Textarea 
+                id="proj-details" 
+                value={tempProj.details} 
+                onChange={(e) => setTempProj({...tempProj, details: e.target.value})} 
+                className="min-h-[120px] rounded-xl resize-none"
+                placeholder="Describe qué hiciste y qué tecnologías usaste..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsProjectOpen(false)}>Cancelar</Button>
+            <Button className="rounded-xl font-bold" onClick={saveProject}>Guardar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

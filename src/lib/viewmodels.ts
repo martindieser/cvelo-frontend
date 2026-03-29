@@ -84,7 +84,6 @@ export interface UserProfileViewModel {
   projects: ProjectViewModel[];
   certificates: string[];
   settings: UserSettingsViewModel; // User settings integrated into profile
-  adaptedResumes: AdaptedResumeViewModel[]; // List of historical documents
 }
 
 /**
@@ -104,6 +103,7 @@ export interface TailoredResumeViewModel {
   jobName: string;
   companyName: string;
   date: string;
+  pdfUrl: string;
   
   // Optimized Content (The "result" of the AI)
   optimizedSummary: string;

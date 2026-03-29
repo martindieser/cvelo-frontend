@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { UserProfileViewModel, AdaptedResumeViewModel } from "@/lib/viewmodels";
 import { UserProfileDTO, UpdateUserProfileRequestDTO, ExperienceItemDTO, EducationItemDTO, LanguageItemDTO, SocialLinkDTO } from "@/lib/dtos";
-import { apiFetch } from "@/lib/apiClient";
+import { useApi } from "./useApi";
 
 export function useUserProfile() {
+  const { apiCall } = useApi();
   const [profile, setProfile] = useState<UserProfileViewModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const data: UserProfileDTO = await apiFetch("/users/me/profile");
+      const data: UserProfileDTO = await apiCall("/users/me/profile");
       
       const mappedProfile: UserProfileViewModel = {
         name: data.name ?? "",
@@ -54,13 +55,7 @@ export function useUserProfile() {
           tone: data.settings.tone,
           template: data.settings.template,
           sectionsOrder: data.settings.sections_order.map(s => ({ id: s.id, name: s.id.charAt(0).toUpperCase() + s.id.slice(1) }))
-        },
-        adaptedResumes: data.adapted_resumes.map(r => ({
-          id: r.id,
-          companyName: r.company_name,
-          resumeName: r.job_name,
-          date: r.date
-        }))
+        }
       };
 
       setProfile(mappedProfile);
@@ -117,8 +112,18 @@ export function useUserProfile() {
           level: l.level 
         }));
       }
+      
+      if (newProfile.projects !== undefined) {
+        updateReq.projects = newProfile.projects.map(p => ({
+          title: p.title,
+          details: p.details.split("\n"),
+          technologies: p.technologies,
+          link: p.link,
+          period: p.period
+        }));
+      }
 
-      await apiFetch("/users/me/profile", {
+      await apiCall("/users/me/profile", {
         method: "PATCH",
         body: JSON.stringify(updateReq),
       });

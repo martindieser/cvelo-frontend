@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from "react";
 import { CheckoutResponseDTO, PaymentStatus, PaymentStatusDTO, CreateCheckoutRequestDTO } from "@/lib/dtos";
-import { apiFetch } from "@/lib/apiClient";
+import { useApi } from "./useApi";
 
 export type PaymentHookStatus = "idle" | "creating" | "awaiting_payment" | "success" | "error" | "expired";
 
 export function usePayment() {
+  const { apiCall } = useApi();
   const [status, setStatus] = useState<PaymentHookStatus>("idle");
   const [checkoutInfo, setCheckoutResponse] = useState<CheckoutResponseDTO | null>(null);
   const pollingInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchPending = async () => {
     try {
-      const data: CheckoutResponseDTO | null = await apiFetch("/payments/pending");
+      const data: CheckoutResponseDTO | null = await apiCall("/payments/pending");
       if (data) {
         setCheckoutResponse(data);
         setStatus("awaiting_payment");
@@ -34,7 +35,7 @@ export function usePayment() {
     setStatus("creating");
     try {
       const createReq: CreateCheckoutRequestDTO = { pack_id: packId };
-      const data: CheckoutResponseDTO = await apiFetch("/payments/checkout", {
+      const data: CheckoutResponseDTO = await apiCall("/payments/checkout", {
         method: "POST",
         body: JSON.stringify(createReq),
       });
@@ -53,7 +54,7 @@ export function usePayment() {
 
     pollingInterval.current = setInterval(async () => {
       try {
-        const data: PaymentStatusDTO = await apiFetch(`/payments/${paymentId}/status`);
+        const data: PaymentStatusDTO = await apiCall(`/payments/${paymentId}/status`);
         
         if (data.status === "approved") {
           stopPolling();
@@ -71,7 +72,7 @@ export function usePayment() {
   const cancelPayment = async () => {
     if (!checkoutInfo) return;
     try {
-      await apiFetch(`/payments/${checkoutInfo.id}/cancel`, { method: "POST" });
+      await apiCall(`/payments/${checkoutInfo.id}/cancel`, { method: "POST" });
       stopPolling();
       setStatus("idle");
       setCheckoutResponse(null);
