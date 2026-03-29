@@ -36,6 +36,7 @@ const Dashboard = () => {
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isTailored, setIsTailored] = useState(false);
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
+  const [docsPage, setDocsPage] = useState(1);
 
   const { profile, loading: profileLoading } = useUserProfile();
   const { status: paymentStatus } = usePayment();
@@ -69,6 +70,7 @@ const Dashboard = () => {
   const handleBackToTailor = () => {
     setIsTailored(false);
     clearTailoredResume();
+    setActiveTab("docs");
   };
 
   const handleNewAdapt = () => {
@@ -131,7 +133,7 @@ const Dashboard = () => {
             ) : activeTab === "info" ? (
               <PersonalInfo />
             ) : activeTab === "docs" ? (
-              <MyDocuments onView={handleViewDocument} />
+              <MyDocuments onView={handleViewDocument} currentPage={docsPage} onPageChange={setDocsPage} />
             ) : activeTab === "settings" ? (
               <Settings />
             ) : (

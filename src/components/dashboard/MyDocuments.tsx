@@ -35,12 +35,13 @@ import LoadingScreen from "@/components/LoadingScreen";
 
 interface MyDocumentsProps {
   onView: (doc: AdaptedResumeViewModel) => void;
+  currentPage: number;
+  onPageChange: (page: number) => void;
 }
 
-const MyDocuments = ({ onView }: MyDocumentsProps) => {
+const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) => {
   const { resumes, loading, deleteResume, updateResume } = useResumes();
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   // Estado para edición
@@ -96,7 +97,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setCurrentPage(1); 
+            onPageChange(1); 
           }}
         />
       </div>
@@ -196,7 +197,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
             size="icon" 
             className="rounded-xl border-border h-10 w-10"
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(p => p - 1)}
+            onClick={() => onPageChange(currentPage - 1)}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -205,7 +206,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i}
-                onClick={() => setCurrentPage(i + 1)}
+                onClick={() => onPageChange(i + 1)}
                 className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${
                   currentPage === i + 1 
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-110" 
@@ -222,7 +223,7 @@ const MyDocuments = ({ onView }: MyDocumentsProps) => {
             size="icon" 
             className="rounded-xl border-border h-10 w-10"
             disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(p => p + 1)}
+            onClick={() => onPageChange(currentPage + 1)}
           >
             <ChevronRight className="w-5 h-5" />
           </Button>

@@ -74,7 +74,8 @@ const PersonalInfo = () => {
     }
   }, [profile]);
 
-  if (loading) {
+  // Solo mostrar pantalla de carga si no tenemos el perfil aún
+  if (loading && !profile) {
     return <LoadingScreen fullScreen={false} message="Cargando tu información" />;
   }
 

@@ -8,8 +8,8 @@ export function useUserProfile() {
   const [profile, setProfile] = useState<UserProfileViewModel | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async () => {
-    setLoading(true);
+  const fetchProfile = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data: UserProfileDTO = await apiCall("/users/me/profile");
       
@@ -62,7 +62,7 @@ export function useUserProfile() {
     } catch (err) {
       console.error("Error fetching profile:", err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -128,8 +128,8 @@ export function useUserProfile() {
         body: JSON.stringify(updateReq),
       });
       
-      // Refresh to ensure we have the latest from server
-      await fetchProfile();
+      // Refresh silently to ensure we have the latest from server (e.g. server-side IDs)
+      await fetchProfile(true);
     } catch (err) {
       console.error("Error updating profile:", err);
       // Rollback
