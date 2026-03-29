@@ -54,7 +54,8 @@ const Settings = () => {
     }
   }, [settings]);
 
-  if (loading) {
+  // Solo mostrar pantalla de carga si no tenemos los settings aún
+  if (loading && !settings) {
     return <LoadingScreen fullScreen={false} message="Cargando tu configuración" />;
   }
 

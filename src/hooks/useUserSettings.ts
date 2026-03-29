@@ -18,8 +18,8 @@ export function useUserSettings() {
   const [settings, setSettings] = useState<UserSettingsViewModel | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchSettings = async () => {
-    setLoading(true);
+  const fetchSettings = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data: UserSettingsDTO = await apiCall("/users/me/settings");
       
@@ -52,7 +52,7 @@ export function useUserSettings() {
         ]
       });
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -83,7 +83,7 @@ export function useUserSettings() {
         body: JSON.stringify(updateReq),
       });
 
-      await fetchSettings();
+      await fetchSettings(true);
     } catch (err) {
       console.error("Error updating settings:", err);
       setSettings(previousSettings);
