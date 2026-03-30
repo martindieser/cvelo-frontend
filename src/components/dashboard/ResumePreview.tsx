@@ -1,4 +1,4 @@
-import { ArrowLeft, Download, Pencil, Check, X, Sparkles } from "lucide-react";
+import { ArrowLeft, Download, Pencil, Check, X, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -7,6 +7,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { InsightsContent } from "./InsightsPanel";
 import { TailoredResumeViewModel } from "@/lib/viewmodels";
 import PDFViewer from "./PDFViewer";
@@ -23,10 +29,68 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
   const { 
     pdfUrl,
     optimizedSkills,
+    optimizedSummary,
+    optimizedExperience,
+    optimizedEducation,
+    optimizedLanguages,
+    optimizedProjects,
+    optimizedCertificates,
     jobName, 
     detectedKeywords, 
     appliedChanges 
   } = data;
+
+  // Calcular el score de palabras clave
+  const calculateScore = () => {
+    if (!detectedKeywords || detectedKeywords.length === 0) return 0;
+    
+    // Normalizar texto para una comparación más justa
+    const normalize = (text: string) => 
+      text.toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""); // Quita acentos pero mantiene espacios y puntuación básica
+
+    // Unimos TODO el contenido del CV en un solo "corpus" de texto
+    const corpusParts = [
+      ...optimizedSkills,
+      optimizedSummary,
+      ...optimizedExperience.map(exp => `${exp.role} ${exp.company} ${exp.details}`),
+      ...optimizedProjects.map(p => `${p.title} ${p.details} ${p.technologies.join(" ")}`),
+      ...optimizedCertificates,
+      ...optimizedEducation.map(edu => `${edu.degree} ${edu.institution}`),
+      ...optimizedLanguages.map(l => `${l.name} ${l.level}`)
+    ];
+
+    const normalizedCorpus = normalize(corpusParts.join(" "));
+
+    const matchedKeywords = detectedKeywords.filter(kw => {
+      const normalizedKw = normalize(kw).trim();
+      if (!normalizedKw) return false;
+
+      // Usamos una expresión regular para buscar la palabra clave con límites de palabra (\b)
+      // Esto evita que "ant" coincida dentro de "relevant" o "React" dentro de "Reaction"
+      // Escapamos caracteres especiales de la keyword para que no rompan la regex
+      const escapedKw = normalizedKw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // Si la keyword termina en un caracter especial (como C++ o .NET), 
+      // \b al final puede fallar. En esos casos usamos un enfoque más flexible.
+      const hasSpecialEnd = /[^a-zA-Z0-9]$/.test(normalizedKw);
+      const regex = new RegExp(hasSpecialEnd ? `\\b${escapedKw}` : `\\b${escapedKw}\\b`, 'i');
+      
+      return regex.test(normalizedCorpus);
+    });
+
+    return Math.round((matchedKeywords.length / detectedKeywords.length) * 100);
+  };
+
+  const score = calculateScore();
+  
+  // Colores basados en el score
+  const getScoreColor = (value: number) => {
+    if (value >= 80) return "text-emerald-500 stroke-emerald-500";
+    if (value >= 50) return "text-amber-500 stroke-amber-500";
+    return "text-destructive stroke-destructive";
+  };
 
   return (
     <div className="flex-1 w-full max-w-5xl mx-auto space-y-4 md:space-y-6">
@@ -81,19 +145,49 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
           CV ADAPTADO PARA
         </span>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-4 min-w-0">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative flex items-center justify-center shrink-0 cursor-help">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="currentColor"
+                        strokeWidth="5"
+                        fill="transparent"
+                        className="text-muted/30"
+                      />
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="currentColor"
+                        strokeWidth="5"
+                        fill="transparent"
+                        strokeDasharray={175.9}
+                        strokeDashoffset={175.9 - (175.9 * score) / 100}
+                        strokeLinecap="round"
+                        className={`transition-all duration-1000 ease-out ${getScoreColor(score)}`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className={`text-sm font-black leading-none ${getScoreColor(score)}`}>{score}%</span>
+                      <span className="text-[7px] font-bold text-muted-foreground uppercase">Keywords</span>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="p-3 max-w-[200px] text-center rounded-xl">
+                  <p className="font-bold mb-1">Match de palabras clave</p>
+                  <p className="text-xs text-muted-foreground">Este puntaje mide qué porcentaje de las palabras clave detectadas en la oferta están presentes en tu CV optimizado.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <h1 className="text-2xl lg:text-4xl font-bold tracking-tight truncate">{jobName}</h1>
           </div>
-          {/* 
-          <div className="flex items-center gap-2">
-            <button className="flex-1 sm:flex-none p-2 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors flex justify-center">
-              <Check className="w-5 h-5" />
-            </button>
-            <button className="flex-1 sm:flex-none p-2 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 transition-colors flex justify-center">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          */}
         </div>
       </div>
 
