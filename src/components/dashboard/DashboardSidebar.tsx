@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   User, 
@@ -18,10 +19,16 @@ interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onPricingClick?: () => void;
+  onItemClick?: () => void;
 }
 
-export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => {
+export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItemClick }: SidebarProps) => {
   const { logout } = useAuth();
+
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab);
+    if (onItemClick) onItemClick();
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -29,7 +36,9 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
         <Link 
           to="/dashboard" 
           className="group"
-          onClick={() => setActiveTab("tailor")}
+          onClick={() => {
+            handleTabClick("tailor");
+          }}
         >
           <div className="w-24 h-24 transition-transform group-hover:scale-110">
             <img src={logoMascot} alt="Logo" className="w-full h-full object-contain" />
@@ -39,7 +48,10 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
 
       <div className="px-4 mb-4">
         <Button 
-          onClick={onPricingClick}
+          onClick={() => {
+            if (onPricingClick) onPricingClick();
+            if (onItemClick) onItemClick();
+          }}
           className="w-full justify-start gap-2 bg-primary/90 hover:bg-primary text-primary-foreground font-bold rounded-xl py-6 shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Sparkles className="w-4 h-4" />
@@ -52,21 +64,21 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
           Principal
         </div>
         <button 
-          onClick={() => setActiveTab("tailor")}
+          onClick={() => handleTabClick("tailor")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "tailor" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
         >
           <LayoutDashboard className="w-4 h-4" />
           Adaptar CV
         </button>
         <button 
-          onClick={() => setActiveTab("info")}
+          onClick={() => handleTabClick("info")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "info" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
         >
           <User className="w-4 h-4" />
           Información Personal
         </button>
         <button 
-          onClick={() => setActiveTab("docs")}
+          onClick={() => handleTabClick("docs")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "docs" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
         >
           <FileText className="w-4 h-4" />
@@ -77,14 +89,17 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
         Sistema
         </div>
         <button 
-        onClick={() => setActiveTab("settings")}
+        onClick={() => handleTabClick("settings")}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
         >
         <Settings className="w-4 h-4" />
         Configuración
         </button>
         <button 
-          onClick={logout}
+          onClick={() => {
+            logout();
+            if (onItemClick) onItemClick();
+          }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
         >
           <LogOut className="w-4 h-4" />
@@ -103,6 +118,8 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick }: Side
 };
 
 const DashboardSidebar = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
       {/* Desktop Sidebar */}
@@ -112,14 +129,19 @@ const DashboardSidebar = ({ activeTab, setActiveTab, onPricingClick }: SidebarPr
 
       {/* Mobile Menu Button (Floating or Integrated) */}
       <div className="lg:hidden fixed bottom-6 left-6 z-50">
-        <Sheet>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button size="icon" className="w-14 h-14 rounded-full shadow-lg shadow-primary/40">
               <Menu className="w-6 h-6" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-72 border-r-border">
-            <SidebarContent activeTab={activeTab} setActiveTab={setActiveTab} onPricingClick={onPricingClick} />
+            <SidebarContent 
+              activeTab={activeTab} 
+              setActiveTab={setActiveTab} 
+              onPricingClick={onPricingClick} 
+              onItemClick={() => setIsOpen(false)}
+            />
           </SheetContent>
         </Sheet>
       </div>
