@@ -91,7 +91,7 @@ export interface UserProfileViewModel {
  */
 export interface AppliedChangeViewModel {
   section: string;
-  description: string;
+  description: string[];
 }
 
 /**
@@ -106,13 +106,13 @@ export interface TailoredResumeViewModel {
   pdfUrl: string;
   
   // Optimized Content (The "result" of the AI)
-  optimizedSummary: string;
-  optimizedExperience: WorkExperienceViewModel[];
-  optimizedSkills: string[];
-  optimizedEducation: EducationViewModel[];
-  optimizedLanguages: LanguageViewModel[];
-  optimizedProjects: ProjectViewModel[];
-  optimizedCertificates: string[];
+  summary: string;
+  experience: WorkExperienceViewModel[];
+  skills: string[];
+  education: EducationViewModel[];
+  languages: LanguageViewModel[];
+  projects: ProjectViewModel[];
+  certificates: string[];
   
   // Metadata & Insights
   detectedKeywords: string[];

@@ -28,13 +28,13 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
 
   const { 
     pdfUrl,
-    optimizedSkills,
-    optimizedSummary,
-    optimizedExperience,
-    optimizedEducation,
-    optimizedLanguages,
-    optimizedProjects,
-    optimizedCertificates,
+    skills,
+    summary,
+    experience,
+    education,
+    languages,
+    projects,
+    certificates,
     jobName, 
     detectedKeywords, 
     appliedChanges 
@@ -52,13 +52,13 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
 
     // Unimos TODO el contenido del CV en un solo "corpus" de texto
     const corpusParts = [
-      ...optimizedSkills,
-      optimizedSummary,
-      ...optimizedExperience.map(exp => `${exp.role} ${exp.company} ${exp.details}`),
-      ...optimizedProjects.map(p => `${p.title} ${p.details} ${p.technologies.join(" ")}`),
-      ...optimizedCertificates,
-      ...optimizedEducation.map(edu => `${edu.degree} ${edu.institution}`),
-      ...optimizedLanguages.map(l => `${l.name} ${l.level}`)
+      ...skills,
+      summary,
+      ...experience.map(exp => `${exp.role} ${exp.company} ${exp.details}`),
+      ...projects.map(p => `${p.title} ${p.details} ${p.technologies.join(" ")}`),
+      ...certificates,
+      ...education.map(edu => `${edu.degree} ${edu.institution}`),
+      ...languages.map(l => `${l.name} ${l.level}`)
     ];
 
     const normalizedCorpus = normalize(corpusParts.join(" "));

@@ -579,7 +579,8 @@ const PersonalInfo = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email de contacto</Label>
-              <Input id="email" value={tempGeneral.email} onChange={(e) => setGeneral({...tempGeneral, email: e.target.value})} className="rounded-xl" />
+              <Input id="email" value={tempGeneral.email} disabled readOnly className="rounded-xl bg-muted/50 cursor-not-allowed" />
+              <p className="text-[10px] text-muted-foreground italic">El email está vinculado a tu cuenta y no puede modificarse.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="location">Ubicación</Label>

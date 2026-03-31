@@ -55,9 +55,14 @@ export const InsightsContent = ({
               </div>
             </div>
             <CardContent className="p-4 space-y-3">
-              <p className="text-xs text-muted-foreground leading-relaxed pl-3 border-l-2 border-primary/30">
-                {change.description}
-              </p>
+              <ul className="space-y-2 pl-3 border-l-2 border-primary/30">
+                {change.description.map((item, j) => (
+                  <li key={j} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
               {/* 
               <div className="flex items-center gap-3 pt-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">¿Te sirvió?</span>

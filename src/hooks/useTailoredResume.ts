@@ -39,48 +39,67 @@ export function useTailoredResume() {
     });
   };
 
-  const mapTailoredDTO = (dto: TailoredResumeDTO, profile: UserProfileViewModel): TailoredResumeViewModel => ({
-    id: dto.resume_id || "temp-id",
-    jobName: dto.job_name,
-    companyName: dto.company_name,
-    date: dto.date,
-    pdfUrl: dto.pdf_url,
-    optimizedSummary: dto.summary ?? "",
-    optimizedExperience: dto.optimized_experience.map((e, i) => ({
-      id: i.toString(),
-      role: e.role,
-      company: e.company,
-      period: e.period,
-      details: e.details.join("\n")
-    })),
-    optimizedSkills: dto.optimized_skills,
-    optimizedEducation: dto.optimized_education.map((edu, i) => ({
-      id: i.toString(),
-      degree: edu.degree,
-      institution: edu.institution,
-      period: edu.period
-    })),
-    optimizedLanguages: dto.optimized_languages.map((l, i) => ({
-      id: i.toString(),
-      name: l.name,
-      level: l.level
-    })),
-    optimizedProjects: dto.optimized_projects.map((p, i) => ({
-      id: i.toString(),
-      title: p.title,
-      details: p.details.join("\n"),
-      technologies: p.technologies ?? [],
-      link: p.link ?? "",
-      period: p.period ?? ""
-    })),
-    optimizedCertificates: dto.optimized_certificates,
-    detectedKeywords: dto.detected_keywords,
-    appliedChanges: dto.applied_changes.map(c => ({
-      section: c.section,
-      description: c.description.join("\n")
-    })),
-    baseProfile: profile
-  });
+  const mapTailoredDTO = (dto: TailoredResumeDTO, profile: UserProfileViewModel): TailoredResumeViewModel => {
+    const sectionNameMap: Record<string, string> = {
+      "optimized_summary": "Resumen",
+      "optimized_experience": "Experiencia",
+      "optimized_projects": "Proyectos",
+      "optimized_skills": "Habilidades",
+      "optimized_education": "Educación",
+      "optimized_languages": "Idiomas",
+      "optimized_certificates": "Certificaciones",
+      "summary": "Resumen",
+      "experience": "Experiencia",
+      "projects": "Proyectos",
+      "skills": "Habilidades",
+      "education": "Educación",
+      "languages": "Idiomas",
+      "certificates": "Certificaciones",
+    };
+
+    return {
+      id: dto.resume_id || "temp-id",
+      jobName: dto.job_name,
+      companyName: dto.company_name,
+      date: dto.date,
+      pdfUrl: dto.pdf_url,
+      summary: dto.summary ?? "",
+      experience: dto.optimized_experience.map((e, i) => ({
+        id: i.toString(),
+        role: e.role,
+        company: e.company,
+        period: e.period,
+        details: e.details.join("\n")
+      })),
+      skills: dto.optimized_skills,
+      education: dto.optimized_education.map((edu, i) => ({
+        id: i.toString(),
+        degree: edu.degree,
+        institution: edu.institution,
+        period: edu.period
+      })),
+      languages: dto.optimized_languages.map((l, i) => ({
+        id: i.toString(),
+        name: l.name,
+        level: l.level
+      })),
+      projects: dto.optimized_projects.map((p, i) => ({
+        id: i.toString(),
+        title: p.title,
+        details: p.details.join("\n"),
+        technologies: p.technologies ?? [],
+        link: p.link ?? "",
+        period: p.period ?? ""
+      })),
+      certificates: dto.optimized_certificates,
+      detectedKeywords: dto.detected_keywords,
+      appliedChanges: dto.applied_changes.map(c => ({
+        section: sectionNameMap[c.section] || c.section,
+        description: c.description
+      })),
+      baseProfile: profile
+    };
+  };
 
   const generateResume = async (jobDescription: string, profile: UserProfileViewModel) => {
     setGenerating(true);

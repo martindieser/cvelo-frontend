@@ -169,7 +169,6 @@ const Dashboard = () => {
                   <InsightsPanel 
                     keywords={tailoredResume.detectedKeywords} 
                     changes={tailoredResume.appliedChanges} 
-                    optimizedSkills={tailoredResume.optimizedSkills}
                     activeHighlight={activeHighlight}
                     onHighlightClick={setActiveHighlight}
                   />
