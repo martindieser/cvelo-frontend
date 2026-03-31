@@ -22,7 +22,7 @@ interface BuyCreditsProps {
 
 const BuyCredits = ({ onClose }: BuyCreditsProps) => {
   const [amount, setAmount] = useState(1);
-  const { status, checkoutInfo, createPayment, resetPayment } = usePayment();
+  const { status, checkoutInfo, createPayment, cancelPayment, resetPayment } = usePayment();
   const { updateProfile } = useUserProfile();
   
   const pricePerCredit = 3000;
@@ -34,7 +34,7 @@ const BuyCredits = ({ onClose }: BuyCreditsProps) => {
   };
 
   const handleCancel = () => {
-    resetPayment();
+    cancelPayment();
   };
 
   const increment = () => amount < 10 && setAmount(amount + 1);
