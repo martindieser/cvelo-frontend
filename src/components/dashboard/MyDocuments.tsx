@@ -19,21 +19,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 
 import { AdaptedResumeViewModel } from "@/lib/viewmodels";
 import { useResumes } from "@/hooks/useResumes";
 import LoadingScreen from "@/components/LoadingScreen";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
 interface MyDocumentsProps {
   onView: (doc: AdaptedResumeViewModel) => void;
@@ -230,7 +221,7 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
         </div>
       )}
 
-      {/* DIÁLOGO DE EDICIÓN */}
+      {/* DIÁLOGOS DE EDICIÓN */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="rounded-2xl w-[90vw] max-w-md border-border">
           <DialogHeader>
@@ -267,29 +258,13 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
         </DialogContent>
       </Dialog>
 
-      {/* DIÁLOGO DE CONFIRMACIÓN DE ELIMINACIÓN */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-2xl w-[90vw] max-w-md border-border font-body">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold text-left">¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription className="text-left">
-              Esta acción no se puede deshacer. Se eliminará permanentemente el documento 
-              <span className="font-bold text-foreground"> "{docToDelete?.resumeName}"</span>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="rounded-xl font-bold mt-0">
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="rounded-xl font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Eliminar documento
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        itemName={docToDelete?.resumeName}
+        actionText="Eliminar documento"
+      />
     </div>
   );
 };

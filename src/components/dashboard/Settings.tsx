@@ -91,9 +91,6 @@ const Settings = () => {
           </p>
         </div>
         <div className="flex items-center gap-2 justify-center">
-          <Button variant="outline" size="sm" className="rounded-xl font-bold gap-2" onClick={handleReset}>
-            <RefreshCcw className="w-4 h-4" /> Restaurar
-          </Button>
           <Button size="sm" className="rounded-xl font-bold gap-2 min-w-[120px]" onClick={handleSave}>
             {isSaved ? <><Check className="w-4 h-4" /> Guardado</> : <><Save className="w-4 h-4" /> Guardar</>}
           </Button>

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { AppConfigViewModel, SectionViewModel, TemplateViewModel } from "@/lib/viewmodels";
-import { apiClient } from "@/lib/apiClient";
+import { useApi } from "./useApi";
 import { AppConfigDTO } from "@/lib/dtos";
+
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 const DEFAULT_SECTIONS: SectionViewModel[] = [
   { id: "summary", name: "Resumen", visible: true },
@@ -32,23 +34,32 @@ export const useConfig = () => {
   const [config, setConfig] = useState<AppConfigViewModel>(DEFAULT_CONFIG);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { apiCall } = useApi();
 
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         setLoading(true);
-        const response = await apiClient.get<AppConfigDTO>("/config");
+        const data = await apiCall("/api/config");
         
-        if (response.data) {
+        if (data) {
+          const dto = data as AppConfigDTO;
           const mappedConfig: AppConfigViewModel = {
-            templates: response.data.templates.map(t => ({
-              id: t.id,
-              name: t.name,
-              description: t.description,
-              thumbnailUrl: t.thumbnail_url,
-              supportedSections: t.supported_sections
-            })),
-            defaultSections: response.data.default_sections.map(s => ({
+            templates: dto.templates.map(t => {
+              // Si la URL es relativa (empieza con /), le pegamos el API_URL
+              const fullThumbnailUrl = (t.thumbnail_url && t.thumbnail_url.startsWith("/"))
+                ? `${API_URL}${t.thumbnail_url}`
+                : t.thumbnail_url;
+
+              return {
+                id: t.id,
+                name: t.name,
+                description: t.description,
+                thumbnailUrl: fullThumbnailUrl || "/placeholder.svg",
+                supportedSections: t.supported_sections
+              };
+            }),
+            defaultSections: dto.default_sections.map(s => ({
               id: s.id,
               name: s.name,
               visible: s.visible
@@ -59,14 +70,13 @@ export const useConfig = () => {
       } catch (err) {
         console.error("Error fetching app config, using defaults:", err);
         setError("No se pudo cargar la configuración del servidor.");
-        // We keep DEFAULT_CONFIG as already set in useState
       } finally {
         setLoading(false);
       }
     };
 
     fetchConfig();
-  }, []);
+  }, [apiCall]);
 
   return { config, loading, error };
 };
