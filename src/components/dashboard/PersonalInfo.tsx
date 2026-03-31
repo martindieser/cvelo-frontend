@@ -38,6 +38,7 @@ import {
 } from "@/lib/viewmodels";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import LoadingScreen from "@/components/LoadingScreen";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
 const PersonalInfo = () => {
   const { profile, updateProfile, loading } = useUserProfile();
@@ -52,6 +53,14 @@ const PersonalInfo = () => {
   const [isSkillOpen, setIsSkillOpen] = useState(false);
   const [isCertOpen, setIsCertOpen] = useState(false);
   const [isProjectOpen, setIsProjectOpen] = useState(false);
+
+  // Estados para confirmación de borrado
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteContext, setDeleteContext] = useState<{
+    type: 'experience' | 'education' | 'social' | 'language' | 'project';
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Estados para edición temporal
   const [tempGeneral, setGeneral] = useState({ name: "", email: "", location: "", phone: "" });
@@ -81,6 +90,32 @@ const PersonalInfo = () => {
 
   if (!profile) return null;
 
+  // Handlers para confirmación de borrado
+  const openDeleteConfirm = (type: 'experience' | 'education' | 'social' | 'language' | 'project', id: string, name: string) => {
+    setDeleteContext({ type, id, name });
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteContext) return;
+
+    const { type, id } = deleteContext;
+    if (type === 'experience') {
+      updateProfile({ experience: profile.experience.filter(e => e.id !== id) });
+    } else if (type === 'education') {
+      updateProfile({ education: profile.education.filter(e => e.id !== id) });
+    } else if (type === 'social') {
+      updateProfile({ socialLinks: profile.socialLinks.filter(s => s.id !== id) });
+    } else if (type === 'language') {
+      updateProfile({ languages: profile.languages.filter(l => l.id !== id) });
+    } else if (type === 'project') {
+      updateProfile({ projects: profile.projects.filter(p => p.id !== id) });
+    }
+
+    setIsDeleteDialogOpen(false);
+    setDeleteContext(null);
+  };
+
   // Handlers
   const saveGeneral = () => {
     updateProfile({ ...tempGeneral });
@@ -92,10 +127,6 @@ const PersonalInfo = () => {
     setIsSummaryOpen(false);
   };
 
-  const deleteExp = (id: string) => {
-    updateProfile({ experience: profile.experience.filter(e => e.id !== id) });
-  };
-
   const saveExp = () => {
     if (tempExp.id) {
       updateProfile({ experience: profile.experience.map(e => e.id === tempExp.id ? tempExp : e) });
@@ -103,10 +134,6 @@ const PersonalInfo = () => {
       updateProfile({ experience: [...profile.experience, { ...tempExp, id: Math.random().toString() }] });
     }
     setIsExperienceOpen(false);
-  };
-
-  const deleteEdu = (id: string) => {
-    updateProfile({ education: profile.education.filter(e => e.id !== id) });
   };
 
   const saveEdu = () => {
@@ -127,10 +154,6 @@ const PersonalInfo = () => {
     setIsSocialOpen(false);
   };
 
-  const deleteSocial = (id: string) => {
-    updateProfile({ socialLinks: profile.socialLinks.filter(s => s.id !== id) });
-  };
-
   const saveSkills = () => {
     updateProfile({ skills: tempSkills.split(",").map(s => s.trim()).filter(s => s !== "") });
     setIsSkillOpen(false);
@@ -145,10 +168,6 @@ const PersonalInfo = () => {
     setIsLanguageOpen(false);
   };
 
-  const deleteLang = (id: string) => {
-    updateProfile({ languages: profile.languages.filter(l => l.id !== id) });
-  };
-
   const saveCerts = () => {
     updateProfile({ certificates: tempCerts.split(",").map(c => c.trim()).filter(c => c !== "") });
     setIsCertOpen(false);
@@ -161,10 +180,6 @@ const PersonalInfo = () => {
       updateProfile({ projects: [...profile.projects, { ...tempProj, id: Math.random().toString() }] });
     }
     setIsProjectOpen(false);
-  };
-
-  const deleteProject = (id: string) => {
-    updateProfile({ projects: profile.projects.filter(p => p.id !== id) });
   };
 
   return (
@@ -257,7 +272,7 @@ const PersonalInfo = () => {
                     >
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteSocial(link.id)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => openDeleteConfirm('social', link.id, link.platform)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -361,7 +376,7 @@ const PersonalInfo = () => {
                       >
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteExp(exp.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteConfirm('experience', exp.id, exp.role)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -414,7 +429,7 @@ const PersonalInfo = () => {
                       >
                         <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteProject(proj.id)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => openDeleteConfirm('project', proj.id, proj.title)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -475,7 +490,7 @@ const PersonalInfo = () => {
                         >
                           <Pencil className="h-3 w-3 text-muted-foreground" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteEdu(edu.id)}>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openDeleteConfirm('education', edu.id, edu.degree)}>
                           <Trash2 className="h-3 w-3 text-destructive" />
                         </Button>
                       </div>
@@ -523,7 +538,7 @@ const PersonalInfo = () => {
                       >
                         <Pencil className="h-3 w-3 text-muted-foreground" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => deleteLang(lang.id)}>
+                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openDeleteConfirm('language', lang.id, lang.name)}>
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
                     </div>
@@ -831,6 +846,13 @@ const PersonalInfo = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        itemName={deleteContext?.name}
+      />
 
     </div>
   );
