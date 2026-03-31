@@ -8,7 +8,7 @@ import {
   Sparkles,
   Menu
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logoMascot from "@/assets/logo-mascot.svg";
@@ -24,6 +24,7 @@ interface SidebarProps {
 
 export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItemClick }: SidebarProps) => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -96,8 +97,9 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItem
         Configuración
         </button>
         <button 
-          onClick={() => {
-            logout();
+          onClick={async () => {
+            await logout();
+            navigate("/", { replace: true });
             if (onItemClick) onItemClick();
           }}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"

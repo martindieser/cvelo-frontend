@@ -12,21 +12,6 @@ import Footer from "@/components/Footer";
 import LoadingScreen from "@/components/LoadingScreen";
 
 const Index = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulamos un tiempo de carga de 2 segundos
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
