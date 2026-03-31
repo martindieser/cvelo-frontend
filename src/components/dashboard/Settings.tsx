@@ -18,9 +18,15 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+} from "@/components/ui/dialog";
 import { Reorder } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { SectionViewModel } from "@/lib/viewmodels";
+import { SectionViewModel, TemplateViewModel } from "@/lib/viewmodels";
 import { useUserSettings } from "@/hooks/useUserSettings";
 import { useConfig } from "@/hooks/useConfig";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -32,6 +38,9 @@ const Settings = () => {
   const [template, setTemplate] = useState("harvard");
   const [sections, setSections] = useState<SectionViewModel[]>([]);
   const [isSaved, setIsSaved] = useState(false);
+  
+  // Estado para el modal de vista previa
+  const [previewTemplate, setPreviewTemplate] = useState<TemplateViewModel | null>(null);
 
   // Sincronizar cuando cargan los settings
   useEffect(() => {
@@ -177,22 +186,47 @@ const Settings = () => {
                   key={t.id}
                   onClick={() => setTemplate(t.id)}
                   className={cn(
-                    "cursor-pointer rounded-2xl border-2 p-4 transition-all hover:shadow-md",
+                    "cursor-pointer rounded-2xl border-2 p-4 transition-all hover:shadow-md group relative",
                     template === t.id ? "border-primary bg-primary/5" : "border-border bg-card"
                   )}
                 >
                   <div className={cn(
-                    "aspect-[3/4] rounded-lg mb-3 border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-tighter text-muted-foreground/30 text-center px-2 overflow-hidden",
-                    template === t.id ? "bg-primary/10 border-primary/20" : "bg-muted/50"
+                    "aspect-[210/297] rounded-lg mb-3 border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-tighter text-muted-foreground/30 text-center overflow-hidden relative",
+                    template === t.id ? "bg-white border-primary/40 ring-2 ring-primary/10" : "bg-muted/30"
                   )}>
                     {t.thumbnailUrl && t.thumbnailUrl !== "/placeholder.svg" ? (
-                      <img src={t.thumbnailUrl} alt={t.name} className="w-full h-full object-cover" />
+                      <img 
+                        src={t.thumbnailUrl} 
+                        alt={t.name} 
+                        className="w-full h-full object-contain" 
+                      />
                     ) : (
-                      `Vista Previa ${t.name}`
+                      <div className="px-2">Vista Previa {t.name}</div>
                     )}
+                    
+                    {/* Overlay de zoom al hacer hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        className="rounded-full h-10 w-10 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewTemplate(t);
+                        }}
+                      >
+                        <Eye className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                   <h4 className="font-bold text-sm mb-1">{t.name}</h4>
                   <p className="text-[10px] text-muted-foreground leading-tight">{t.description}</p>
+                  
+                  {template === t.id && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1">
+                      <Check className="h-3 w-3" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -200,6 +234,29 @@ const Settings = () => {
         </Card>
 
       </div>
+
+      {/* Modal de Vista Previa Full (Sin botón de seleccionar) */}
+      <Dialog open={!!previewTemplate} onOpenChange={(open) => !open && setPreviewTemplate(null)}>
+        <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] p-0 overflow-hidden bg-muted flex flex-col rounded-3xl border-none">
+          <DialogHeader className="p-5 bg-background border-b shrink-0">
+            <div className="text-left">
+              <DialogTitle className="text-xl font-bold">{previewTemplate?.name}</DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{previewTemplate?.description}</p>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 flex justify-center bg-muted/30">
+            <div className="bg-white shadow-2xl rounded-sm w-full max-w-[750px] h-fit">
+              {previewTemplate?.thumbnailUrl && (
+                <img 
+                  src={previewTemplate.thumbnailUrl} 
+                  alt={previewTemplate.name} 
+                  className="w-full h-auto block"
+                />
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
