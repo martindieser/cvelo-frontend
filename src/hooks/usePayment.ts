@@ -31,10 +31,10 @@ export function usePayment() {
     };
   }, []);
 
-  const createPayment = async (packId: string) => {
+  const createPayment = async (quantity: number) => {
     setStatus("creating");
     try {
-      const createReq: CreateCheckoutRequestDTO = { pack_id: packId };
+      const createReq: CreateCheckoutRequestDTO = { quantity };
       const data: CheckoutResponseDTO = await apiCall("/payments/checkout", {
         method: "POST",
         body: JSON.stringify(createReq),

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePayment } from "@/hooks/usePayment";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useConfig } from "@/hooks/useConfig";
 
 interface BuyCreditsProps {
   onClose?: () => void;
@@ -24,8 +25,9 @@ const BuyCredits = ({ onClose }: BuyCreditsProps) => {
   const [amount, setAmount] = useState(1);
   const { status, checkoutInfo, createPayment, cancelPayment, resetPayment } = usePayment();
   const { updateProfile } = useUserProfile();
+  const { config, loading: configLoading } = useConfig();
   
-  const pricePerCredit = 3000;
+  const pricePerCredit = config?.pricePerCredit || 3000;
   const totalPrice = amount * pricePerCredit;
 
   const handleSuccess = () => {
@@ -41,7 +43,7 @@ const BuyCredits = ({ onClose }: BuyCreditsProps) => {
   const decrement = () => amount > 1 && setAmount(amount - 1);
 
   const handlePayment = async () => {
-    await createPayment(amount.toString());
+    await createPayment(amount);
   };
 
   if (status === "creating") {

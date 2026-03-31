@@ -89,6 +89,7 @@ export interface SectionConfigDTO {
 export interface AppConfigDTO {
   templates: TemplateDTO[];
   default_sections: SectionConfigDTO[];
+  credit_price: number;
 }
 
 export interface UserSettingsDTO {
@@ -204,7 +205,7 @@ export interface TaskStatusDTO {
 // --- Payment & Checkout DTOs ---
 
 export interface CreateCheckoutRequestDTO {
-  pack_id: string;
+  quantity: number;
 }
 
 export interface CheckoutResponseDTO {

@@ -27,7 +27,8 @@ const DEFAULT_TEMPLATES: TemplateViewModel[] = [
 
 const DEFAULT_CONFIG: AppConfigViewModel = {
   templates: DEFAULT_TEMPLATES,
-  defaultSections: DEFAULT_SECTIONS
+  defaultSections: DEFAULT_SECTIONS,
+  pricePerCredit: 3000 // Default fallback
 };
 
 export const useConfig = () => {
@@ -63,7 +64,8 @@ export const useConfig = () => {
               id: s.id,
               name: s.name,
               visible: s.visible
-            }))
+            })),
+            pricePerCredit: dto.credit_price
           };
           setConfig(mappedConfig);
         }

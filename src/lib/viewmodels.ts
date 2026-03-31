@@ -57,6 +57,7 @@ export interface TemplateViewModel {
 export interface AppConfigViewModel {
   templates: TemplateViewModel[];
   defaultSections: SectionViewModel[];
+  pricePerCredit: number;
 }
 
 /**
