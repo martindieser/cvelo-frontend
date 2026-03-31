@@ -84,6 +84,12 @@ const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) =>
   const confirmDelete = () => {
     if (docToDelete) {
       deleteResume(docToDelete.id);
+      
+      // If we are on a page > 1 and it's the only item on that page, go back
+      if (currentPage > 1 && currentDocs.length === 1) {
+        onPageChange(currentPage - 1);
+      }
+      
       setIsDeleteDialogOpen(false);
       setDocToDelete(null);
     }
