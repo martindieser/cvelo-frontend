@@ -72,6 +72,25 @@ export interface SectionOrderItemDTO {
   visible?: boolean;
 }
 
+export interface TemplateDTO {
+  id: string;
+  name: string;
+  description: string;
+  thumbnail_url: string;
+  supported_sections: string[];
+}
+
+export interface SectionConfigDTO {
+  id: string;
+  name: string;
+  visible: boolean;
+}
+
+export interface AppConfigDTO {
+  templates: TemplateDTO[];
+  default_sections: SectionConfigDTO[];
+}
+
 export interface UserSettingsDTO {
   language: "es" | "en" | "pt";
   tone: "formal" | "informal" | "professional" | "witty";

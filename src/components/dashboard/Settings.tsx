@@ -22,27 +22,15 @@ import { Reorder } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SectionViewModel } from "@/lib/viewmodels";
 import { useUserSettings } from "@/hooks/useUserSettings";
+import { useConfig } from "@/hooks/useConfig";
 import LoadingScreen from "@/components/LoadingScreen";
 
-const templates = [
-  { id: "harvard", name: "Harvard (Classic)", description: "Limpio y profesional, estándar de la industria." },
-];
-
-const defaultSections = [
-  { id: "summary", name: "Resumen", visible: true },
-  { id: "experience", name: "Experiencia", visible: true },
-  { id: "education", name: "Educación", visible: true },
-  { id: "skills", name: "Habilidades", visible: true },
-  { id: "languages", name: "Idiomas", visible: true },
-  { id: "certificates", name: "Certificados", visible: true },
-  { id: "projects", name: "Proyectos", visible: true },
-];
-
 const Settings = () => {
-  const { settings, loading, updateSettings } = useUserSettings();
+  const { settings, loading: settingsLoading, updateSettings } = useUserSettings();
+  const { config, loading: configLoading } = useConfig();
   const [language, setLanguage] = useState("es");
   const [template, setTemplate] = useState("harvard");
-  const [sections, setSections] = useState<SectionViewModel[]>(defaultSections);
+  const [sections, setSections] = useState<SectionViewModel[]>([]);
   const [isSaved, setIsSaved] = useState(false);
 
   // Sincronizar cuando cargan los settings
@@ -50,12 +38,15 @@ const Settings = () => {
     if (settings) {
       setLanguage(settings.language);
       setTemplate(settings.template);
-      setSections(settings.sectionsOrder);
+      setSections(settings.sectionsOrder && settings.sectionsOrder.length > 0 
+        ? settings.sectionsOrder 
+        : config.defaultSections
+      );
     }
-  }, [settings]);
+  }, [settings, config.defaultSections]);
 
   // Solo mostrar pantalla de carga si no tenemos los settings aún
-  if (loading && !settings) {
+  if ((settingsLoading && !settings) || configLoading) {
     return <LoadingScreen fullScreen={false} message="Cargando tu configuración" />;
   }
 
@@ -72,7 +63,7 @@ const Settings = () => {
   const handleReset = () => {
     setLanguage("es");
     setTemplate("harvard");
-    setSections(defaultSections);
+    setSections(config.defaultSections);
   };
 
   const toggleVisibility = (id: string) => {
@@ -181,7 +172,7 @@ const Settings = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {templates.map((t) => (
+              {config.templates.map((t) => (
                 <div 
                   key={t.id}
                   onClick={() => setTemplate(t.id)}
@@ -191,10 +182,14 @@ const Settings = () => {
                   )}
                 >
                   <div className={cn(
-                    "aspect-[3/4] rounded-lg mb-3 border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-tighter text-muted-foreground/30 text-center px-2",
+                    "aspect-[3/4] rounded-lg mb-3 border border-border flex items-center justify-center text-[10px] font-bold uppercase tracking-tighter text-muted-foreground/30 text-center px-2 overflow-hidden",
                     template === t.id ? "bg-primary/10 border-primary/20" : "bg-muted/50"
                   )}>
-                    Vista Previa {t.name}
+                    {t.thumbnailUrl && t.thumbnailUrl !== "/placeholder.svg" ? (
+                      <img src={t.thumbnailUrl} alt={t.name} className="w-full h-full object-cover" />
+                    ) : (
+                      `Vista Previa ${t.name}`
+                    )}
                   </div>
                   <h4 className="font-bold text-sm mb-1">{t.name}</h4>
                   <p className="text-[10px] text-muted-foreground leading-tight">{t.description}</p>

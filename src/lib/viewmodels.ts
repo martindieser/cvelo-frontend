@@ -43,7 +43,20 @@ export interface LanguageViewModel {
 export interface SectionViewModel {
   id: string;
   name: string;
-  visible?: boolean;
+  visible: boolean;
+}
+
+export interface TemplateViewModel {
+  id: string;
+  name: string;
+  description: string;
+  thumbnailUrl: string;
+  supportedSections: string[];
+}
+
+export interface AppConfigViewModel {
+  templates: TemplateViewModel[];
+  defaultSections: SectionViewModel[];
 }
 
 /**
