@@ -60,7 +60,9 @@ const BuyCredits = ({ onClose }: BuyCreditsProps) => {
         <div className="relative p-4 bg-white rounded-3xl shadow-xl border border-border group overflow-hidden">
           <div className="w-48 h-48 relative z-10">
             <img 
-              src={checkoutInfo?.qr_code} 
+              src={checkoutInfo?.qr_code?.startsWith('data:') 
+                ? checkoutInfo.qr_code 
+                : `data:image/png;base64,${checkoutInfo?.qr_code}`} 
               alt="QR Code" 
               className="w-full h-full object-contain"
             />
