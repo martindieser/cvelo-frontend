@@ -4,11 +4,13 @@ import { cn } from "@/lib/utils";
 interface LoadingScreenProps {
   fullScreen?: boolean;
   message?: string;
+  showLogo?: boolean;
 }
 
 const LoadingScreen = ({ 
   fullScreen = true, 
-  message = "cargando"
+  message = "cargando",
+  showLogo = true
 }: LoadingScreenProps) => {
   return (
     <div className={cn(
@@ -17,36 +19,38 @@ const LoadingScreen = ({
     )}>
       <div className="flex flex-col items-center">
         {/* Logo con rotación y escalado */}
-        <div className={cn(
-          "flex items-center justify-center animate-logo-combined",
-          fullScreen ? "w-32 h-32" : "w-20 h-20"
-        )}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 200 220"
-            className="w-full h-full drop-shadow-md"
-          >
-            <path
-              d="M52,45 L130,45 L155,70 L155,175 Q155,182 148,182 L52,182 Q45,182 45,175 L45,52 Q45,45 52,45 Z"
-              fill="#4CAF50"
-            />
-            <path d="M130,45 L155,70 L130,70 Z" fill="#388E3C" />
-            <circle cx="84" cy="100" r="15" fill="#FFFFFF" />
-            <circle cx="116" cy="100" r="15" fill="#FFFFFF" />
-            <circle cx="86" cy="102" r="7" fill="#212121" />
-            <circle cx="118" cy="102" r="7" fill="#212121" />
-            <circle cx="82" cy="97" r="3" fill="#FFFFFF" />
-            <circle cx="114" cy="97" r="3" fill="#FFFFFF" />
-            <g fill="#FFFFFF" opacity="0.4">
-              <rect x="65" y="130" width="70" height="4" rx="2" />
-              <rect x="65" y="142" width="70" height="4" rx="2" />
-              <rect x="65" y="154" width="45" height="4" rx="2" />
-            </g>
-          </svg>
-        </div>
+        {showLogo && (
+          <div className={cn(
+            "flex items-center justify-center animate-logo-combined",
+            fullScreen ? "w-32 h-32" : "w-20 h-20"
+          )}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 200 220"
+              className="w-full h-full drop-shadow-md"
+            >
+              <path
+                d="M52,45 L130,45 L155,70 L155,175 Q155,182 148,182 L52,182 Q45,182 45,175 L45,52 Q45,45 52,45 Z"
+                fill="#4CAF50"
+              />
+              <path d="M130,45 L155,70 L130,70 Z" fill="#388E3C" />
+              <circle cx="84" cy="100" r="15" fill="#FFFFFF" />
+              <circle cx="116" cy="100" r="15" fill="#FFFFFF" />
+              <circle cx="86" cy="102" r="7" fill="#212121" />
+              <circle cx="118" cy="102" r="7" fill="#212121" />
+              <circle cx="82" cy="97" r="3" fill="#FFFFFF" />
+              <circle cx="114" cy="97" r="3" fill="#FFFFFF" />
+              <g fill="#FFFFFF" opacity="0.4">
+                <rect x="65" y="130" width="70" height="4" rx="2" />
+                <rect x="65" y="142" width="70" height="4" rx="2" />
+                <rect x="65" y="154" width="45" height="4" rx="2" />
+              </g>
+            </svg>
+          </div>
+        )}
 
         {/* Texto cargando.... */}
-        <div className={cn(fullScreen ? "mt-12" : "mt-6")}>
+        <div className={cn(showLogo ? (fullScreen ? "mt-12" : "mt-6") : "")}>
           <p className={cn(
             "font-medium text-muted-foreground tracking-tight",
             fullScreen ? "text-xl" : "text-base"

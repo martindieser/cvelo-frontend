@@ -9,9 +9,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LoginFormProps {
   onToggle: () => void;
+  onSuccess?: () => void;
 }
 
-const LoginForm = ({ onToggle }: LoginFormProps) => {
+const LoginForm = ({ onToggle, onSuccess }: LoginFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -23,7 +24,11 @@ const LoginForm = ({ onToggle }: LoginFormProps) => {
     setErrorMsg(null);
     try {
       await login({ email, password });
-      navigate("/dashboard");
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Login failed:", error);
       setErrorMsg("Correo electrónico o contraseña incorrectos. Por favor, inténtalo de nuevo.");
@@ -74,21 +79,11 @@ const LoginForm = ({ onToggle }: LoginFormProps) => {
             Iniciando sesión...
           </>
         ) : (
-          "Iniciar sesión"
+          "Iniciar Sesión"
         )}
       </Button>
-      <p className="text-sm text-center text-muted-foreground mt-4">
-        ¿No tienes una cuenta?{" "}
-        <button 
-          type="button"
-          onClick={onToggle}
-          className="text-primary font-bold hover:underline"
-        >
-          Regístrate gratis
-        </button>
-      </p>
-    </form>
-  );
-};
+      </form>
+      );
+      };
 
 export default LoginForm;

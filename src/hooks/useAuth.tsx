@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   login: (data: LoginRequestDTO) => Promise<void>;
   register: (data: RegisterRequestDTO) => Promise<void>;
+  verifyOtp: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -60,24 +61,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (data: RegisterRequestDTO) => {
     setLoading(true);
     try {
-      // Register returns RegisterResponseDTO which doesn't include a token/user for immediate login
-      // but based on the existing mock, we want to log in. 
-      // Actually, looking at openapi.json, /auth/register returns 201 with message, user_id, email.
-      // So the user probably needs to log in after registering, or the API should be changed.
-      // For now, I'll follow the openapi and if it doesn't log in automatically, I'll just finish the call.
       const response = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
       });
+      return response;
+    } catch (err) {
+      throw err; 
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Based on OpenAPI, we don't get a token here. 
-      // We might want to automatically call login after register if the API supports it,
-      // but let's stick to the specs.
-      console.log("Register successful:", response);
+  const verifyOtp = async (email: string, code: string) => {
+    setLoading(true);
+    try {
+      const response: any = await apiFetch("/auth/otp-code", {
+        method: "POST",
+        body: JSON.stringify({ email, code }),
+      });
       
-      // If the user expects to be logged in, we might need to perform a login here.
-      // But RegisterResponseDTO doesn't have a password.
-      // I'll keep it simple: just register. The UI should redirect to login or show success.
+      // Si la verificación devuelve token/user (login automático), los guardamos
+      if (response && response.token) {
+        const { user: apiUser, token } = response;
+        const userVm: AuthUserViewModel = {
+          id: apiUser.id,
+          name: apiUser.name,
+          email: apiUser.email
+        };
+        setUser(userVm);
+        localStorage.setItem("user", JSON.stringify(userVm));
+        localStorage.setItem("token", token);
+      }
+    } catch (err) {
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -106,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading, 
       login, 
       register, 
+      verifyOtp,
       logout
     }}>
       {children}
