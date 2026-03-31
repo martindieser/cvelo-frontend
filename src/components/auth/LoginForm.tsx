@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface LoginFormProps {
   onToggle: () => void;
@@ -13,21 +14,32 @@ interface LoginFormProps {
 const LoginForm = ({ onToggle }: LoginFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { login, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     try {
       await login({ email, password });
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
+      setErrorMsg("Correo electrónico o contraseña incorrectos. Por favor, inténtalo de nuevo.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {errorMsg && (
+        <Alert variant="destructive" className="bg-destructive/10 text-destructive border-destructive/20 rounded-xl animate-in fade-in slide-in-from-top-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="font-medium ml-2">
+            {errorMsg}
+          </AlertDescription>
+        </Alert>
+      )}
       <div className="space-y-2">
         <Label htmlFor="email">Correo electrónico</Label>
         <Input 
@@ -41,12 +53,7 @@ const LoginForm = ({ onToggle }: LoginFormProps) => {
         />
       </div>
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Contraseña</Label>
-          <a href="#" className="text-sm text-primary hover:underline font-medium">
-            ¿Olvidaste tu contraseña?
-          </a>
-        </div>
+        <Label htmlFor="password">Contraseña</Label>
         <Input 
           id="password" 
           type="password" 

@@ -49,10 +49,10 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 pb-12 sm:pb-20">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <Link to="/" className="group">
             <div className="w-32 h-32 transition-transform group-hover:scale-105">
               <img src={logoMascot} alt="CurriAI Logo" className="w-full h-full object-contain" />
