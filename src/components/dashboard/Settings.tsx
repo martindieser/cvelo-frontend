@@ -41,6 +41,15 @@ const Settings = () => {
   
   // Estado para el modal de vista previa
   const [previewTemplate, setPreviewTemplate] = useState<TemplateViewModel | null>(null);
+  
+  // Estado persistente para evitar que el contenido desaparezca durante la animación de cierre
+  const [displayTemplate, setDisplayTemplate] = useState<TemplateViewModel | null>(null);
+
+  useEffect(() => {
+    if (previewTemplate) {
+      setDisplayTemplate(previewTemplate);
+    }
+  }, [previewTemplate]);
 
   // Sincronizar cuando cargan los settings
   useEffect(() => {
@@ -237,16 +246,16 @@ const Settings = () => {
         <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] p-0 overflow-hidden bg-muted flex flex-col rounded-3xl border-none">
           <DialogHeader className="p-5 bg-background border-b shrink-0">
             <div className="text-left">
-              <DialogTitle className="text-xl font-bold">{previewTemplate?.name}</DialogTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">{previewTemplate?.description}</p>
+              <DialogTitle className="text-xl font-bold">{displayTemplate?.name}</DialogTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">{displayTemplate?.description}</p>
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-4 md:p-6 flex justify-center bg-muted/30">
             <div className="bg-white shadow-2xl rounded-sm w-full max-w-[750px] h-fit">
-              {previewTemplate?.thumbnailUrl && (
+              {displayTemplate?.thumbnailUrl && (
                 <img 
-                  src={previewTemplate.thumbnailUrl} 
-                  alt={previewTemplate.name} 
+                  src={displayTemplate.thumbnailUrl} 
+                  alt={displayTemplate.name} 
                   className="w-full h-auto block"
                 />
               )}
