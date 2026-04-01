@@ -156,10 +156,7 @@ const FreeBuilder = () => {
               <img src={logoMascot} alt="CVealo" className="w-full h-full object-contain" />
             </div>
           </Link>
-          <div className="h-6 w-px bg-border hidden sm:block" />
-          <h1 className="text-sm font-medium tracking-tight hidden sm:flex items-center gap-2 text-muted-foreground">
-            EDITOR
-          </h1>
+
         </div>
 
         <div className="flex items-center gap-3">
