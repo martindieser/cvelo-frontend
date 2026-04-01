@@ -5,20 +5,32 @@ import {
   ProcessResumeRequestDTO, 
   TaskResponseDTO, 
   TaskStatusDTO, 
-  EnhanceResumeRequestDTO 
+  EnhanceResumeRequestDTO,
+  TaskStatus,
+  UserProfileDTO,
+  MatchesDTO,
+  ApprovalRequestDTO
 } from "@/lib/dtos";
 
 export function useOnboardingProcess() {
   const { apiCall } = useApi();
-  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "enhancing" | "completed" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "enhancing" | "awaiting_approval" | "completed" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [extractedProfile, setExtractedProfile] = useState<UserProfileDTO | null>(null);
+  const [enhanceTaskId, setEnhanceTaskId] = useState<string | null>(null);
+  const [taskResult, setTaskResult] = useState<any>(null);
 
-  const pollTask = useCallback(async (taskId: string): Promise<any> => {
+  const pollTask = useCallback(async (taskId: string, onAwaitingApproval?: (result: any) => void): Promise<any> => {
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
         try {
           const task: TaskStatusDTO = await apiCall(`/resumes/tasks/${taskId}`);
-          if (task.status === "COMPLETED") {
+          
+          if (task.status === "AWAITING_APPROVAL") {
+            clearInterval(interval);
+            if (onAwaitingApproval) onAwaitingApproval(task.result);
+            resolve(task.result);
+          } else if (task.status === "COMPLETED") {
             clearInterval(interval);
             resolve(task.result);
           } else if (task.status === "FAILED") {
@@ -34,7 +46,6 @@ export function useOnboardingProcess() {
   }, [apiCall]);
 
   const uploadFile = useCallback(async (file: File): Promise<string> => {
-    console.log("Subiendo archivo inmediatamente...", file.name);
     setStatus("uploading");
     try {
       const formData = new FormData();
@@ -44,11 +55,9 @@ export function useOnboardingProcess() {
         method: "POST",
         body: formData,
       });
-      console.log("Upload exitoso, file_id:", uploadRes.file_id);
       setStatus("idle");
       return uploadRes.file_id;
     } catch (err: any) {
-      console.error("Error al subir archivo:", err);
       setError(err.message || "Error al subir el archivo.");
       setStatus("error");
       throw err;
@@ -56,7 +65,6 @@ export function useOnboardingProcess() {
   }, [apiCall]);
 
   const startOnboardingProcess = useCallback(async (fileId: string, jobDescription: string) => {
-    console.log("Iniciando procesamiento de IA con file_id:", fileId);
     setStatus("processing");
     setError(null);
 
@@ -68,7 +76,8 @@ export function useOnboardingProcess() {
         body: JSON.stringify(processReq),
       });
 
-      await pollTask(processTask.task_id);
+      const profile = await pollTask(processTask.task_id);
+      setExtractedProfile(profile);
 
       // 2. Enhance (Tailor to job description)
       setStatus("enhancing");
@@ -78,23 +87,54 @@ export function useOnboardingProcess() {
         body: JSON.stringify(enhanceReq),
       });
 
-      const result = await pollTask(enhanceTask.task_id);
-      console.log("Adaptación completada exitosamente:", result);
+      setEnhanceTaskId(enhanceTask.task_id);
+
+      const result = await pollTask(enhanceTask.task_id, (res) => {
+        setTaskResult(res);
+        setStatus("awaiting_approval");
+      });
       
-      setStatus("completed");
+      // If result is returned directly (e.g. fast processing), handle status
+      if (result && result.status !== "AWAITING_APPROVAL") {
+        setStatus("completed");
+      }
       return result;
     } catch (err: any) {
-      console.error("Onboarding process error:", err);
       setError(err.message || "Ocurrió un error durante el procesamiento.");
       setStatus("error");
       throw err;
     }
   }, [apiCall, pollTask]);
 
+  const approveTask = useCallback(async (matches: MatchesDTO) => {
+    if (!enhanceTaskId) return;
+    
+    setStatus("enhancing");
+    setError(null);
+    try {
+      const approvalReq: ApprovalRequestDTO = { matches };
+      await apiCall(`/resumes/enhance/${enhanceTaskId}/approval`, {
+        method: "POST",
+        body: JSON.stringify(approvalReq),
+      });
+
+      const result = await pollTask(enhanceTaskId);
+      setStatus("completed");
+      return result;
+    } catch (err: any) {
+      setError(err.message || "Error al aprobar los cambios.");
+      setStatus("error");
+      throw err;
+    }
+  }, [apiCall, enhanceTaskId, pollTask]);
+
   return {
     status,
     error,
+    extractedProfile,
+    taskResult,
     uploadFile,
-    startOnboardingProcess
+    startOnboardingProcess,
+    approveTask
   };
 }

@@ -27,14 +27,16 @@ import TailorCV from "@/components/dashboard/TailorCV";
 import PersonalInfo from "@/components/dashboard/PersonalInfo";
 import MyDocuments from "@/components/dashboard/MyDocuments";
 import Settings from "@/components/dashboard/Settings";
+import LoadingScreen from "@/components/LoadingScreen";
 import BuyCredits from "@/components/dashboard/BuyCredits";
 import { AdaptedResumeViewModel } from "@/lib/viewmodels";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { useTailoredResume } from "@/hooks/useTailoredResume";
-import LoadingScreen from "@/components/LoadingScreen";
 import { usePayment } from "@/hooks/usePayment";
+import { useTailoredResume } from "@/hooks/useTailoredResume";
+import ValidationIntermediary from "@/components/on-boarding/ValidationIntermediary";
 
 const Dashboard = () => {
+// ... existing code ...
   const [searchParams, setSearchParams] = useSearchParams();
   const resumeIdParam = searchParams.get("resumeId");
 
@@ -68,7 +70,10 @@ const Dashboard = () => {
     loading: tailoringLoading,
     error: tailoringError,
     currentTaskId,
+    taskStatus,
+    taskResult,
     generateResume, 
+    approveResume,
     fetchTailoredResume,
     clearTailoredResume,
     clearError
@@ -78,10 +83,18 @@ const Dashboard = () => {
     if (!profile) return;
     setIsTailored(true); // Mostrar pantalla de carga/vista previa inmediatamente
     try {
-      await generateResume(description, profile);
+      await generateResume(description);
     } catch (err) {
       console.error("Failed to generate resume", err);
-      // No ponemos isTailored en false aquí para permitir que se muestre el tailoringError en la UI
+    }
+  };
+
+  const handleApprove = async (matches: any) => {
+    if (!profile) return;
+    try {
+      await approveResume(matches, profile);
+    } catch (err) {
+      console.error("Error approving task:", err);
     }
   };
 
@@ -137,10 +150,25 @@ const Dashboard = () => {
           <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-4 lg:gap-8">
             
             {isTailored ? (
-              tailoringGenerating || isLoading ? (
+              taskStatus === "AWAITING_APPROVAL" && profile && taskResult ? (
+                <div className="flex-1 max-w-2xl mx-auto">
+                  <ValidationIntermediary 
+                    profile={profile}
+                    initialMatches={taskResult.matches}
+                    jobInfo={taskResult.job}
+                    onApprove={handleApprove}
+                    onBack={handleBackToTailor}
+                    isSubmitting={tailoringGenerating}
+                  />
+                </div>
+              ) : tailoringGenerating || isLoading ? (
                 <LoadingScreen 
                   fullScreen={false} 
-                  message={tailoringGenerating ? "CurriAI está analizando la oferta y adaptando tu CV" : "Cargando documento"} 
+                  message={
+                    taskStatus === "PROCESSING" || taskStatus === "PENDING" 
+                      ? "CurriAI está analizando la oferta y adaptando tu CV" 
+                      : "Generando documento final y PDF"
+                  } 
                 />
               ) : tailoringError ? (
                 <div className="flex-1 max-w-2xl mx-auto py-12">

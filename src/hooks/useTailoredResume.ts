@@ -4,7 +4,10 @@ import {
   EnhanceResumeRequestDTO, 
   TaskResponseDTO, 
   TaskStatusDTO, 
-  TailoredResumeDTO 
+  TailoredResumeDTO,
+  TaskStatus,
+  MatchesDTO,
+  ApprovalRequestDTO
 } from "@/lib/dtos";
 import { useApi } from "./useApi";
 
@@ -15,17 +18,28 @@ export function useTailoredResume() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
+  const [taskStatus, setTaskStatus] = useState<TaskStatus>("PENDING");
+  const [taskResult, setTaskResult] = useState<any>(null);
 
-  const pollTask = async (taskId: string): Promise<TailoredResumeDTO> => {
+  const pollTask = async (taskId: string): Promise<any> => {
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
         try {
           const task: TaskStatusDTO = await apiCall(`/resumes/tasks/${taskId}`);
-          if (task.status === "COMPLETED") {
+          setTaskStatus(task.status);
+          
+          if (task.status === "AWAITING_APPROVAL") {
             clearInterval(interval);
-            // The result now contains the full tailored resume object including pdf_url
+            setTaskResult(task.result);
+            setGenerating(false); // Liberar estado para interacción
+            resolve(task.result);
+          } else if (task.status === "COMPLETED") {
+            clearInterval(interval);
+            setTaskResult(task.result);
+            setGenerating(false);
             resolve(task.result as TailoredResumeDTO); 
-          } else if (task.status === "FAILED") {
+          }
+ else if (task.status === "FAILED") {
             clearInterval(interval);
             setError(task.error || "Ocurrió un error inesperado al procesar tu currículum.");
             reject(new Error(task.error || "Task failed"));
@@ -101,9 +115,10 @@ export function useTailoredResume() {
     };
   };
 
-  const generateResume = async (jobDescription: string, profile: UserProfileViewModel) => {
+  const generateResume = async (jobDescription: string) => {
     setGenerating(true);
     setError(null);
+    setTaskStatus("PENDING");
     try {
       const enhanceReq: EnhanceResumeRequestDTO = { job_description: jobDescription };
       const task: TaskResponseDTO = await apiCall("/resumes/enhance", {
@@ -112,22 +127,40 @@ export function useTailoredResume() {
       });
 
       setCurrentTaskId(task.task_id);
+      const result = await pollTask(task.task_id);
+      setGenerating(false);
+      return result;
+    } catch (err) {
+      console.error("Error initiating resume enhancement:", err);
+      setGenerating(false);
+      throw err;
+    }
+  };
 
-      // Polling now returns the full tailored object
-      const resultDto = await pollTask(task.task_id);
+  const approveResume = async (matches: MatchesDTO, profile: UserProfileViewModel) => {
+    if (!currentTaskId) return;
+    
+    setGenerating(true);
+    setError(null);
+    try {
+      const approvalReq: ApprovalRequestDTO = { matches };
+      await apiCall(`/resumes/enhance/${currentTaskId}/approval`, {
+        method: "POST",
+        body: JSON.stringify(approvalReq),
+      });
+
+      // After approval, continue polling until completed
+      const resultDto = await pollTask(currentTaskId);
       
-      // En lugar de mapear aquí, llamamos a fetchTailoredResume para unificar el flujo
-      // como si viniéramos de "Mis Documentos"
       if (resultDto.resume_id) {
         return await fetchTailoredResume(resultDto.resume_id, profile);
       } else {
         throw new Error("No se pudo obtener el ID del currículum generado.");
       }
     } catch (err) {
-      console.error("Error generating resume:", err);
-      throw err;
-    } finally {
+      console.error("Error approving resume:", err);
       setGenerating(false);
+      throw err;
     }
   };
 
@@ -144,6 +177,7 @@ export function useTailoredResume() {
       throw err;
     } finally {
       setLoading(false);
+      setGenerating(false);
     }
   };
 
@@ -151,6 +185,8 @@ export function useTailoredResume() {
     setTailoredResume(null);
     setError(null);
     setCurrentTaskId(null);
+    setTaskStatus("PENDING");
+    setTaskResult(null);
   };
 
   const clearError = () => setError(null);
@@ -161,7 +197,10 @@ export function useTailoredResume() {
     loading, 
     error,
     currentTaskId,
+    taskStatus,
+    taskResult,
     generateResume, 
+    approveResume,
     fetchTailoredResume,
     clearTailoredResume,
     clearError

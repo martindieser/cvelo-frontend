@@ -188,10 +188,39 @@ export interface ProcessResumeRequestDTO {
 
 // --- Task & Async DTOs ---
 
-export type TaskStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+export type TaskStatus = "PENDING" | "PROCESSING" | "AWAITING_APPROVAL" | "COMPLETED" | "FAILED";
 
 export interface TaskResponseDTO {
   task_id: string;
+}
+
+export interface JobMatchDTO {
+  job_name: string;
+  company_name: string;
+  keywords: string[];
+}
+
+export interface ExperienceMatchDTO {
+  index: number;
+  surviving_bullet_indices: number[];
+}
+
+export interface ProjectMatchDTO {
+  index: number;
+  surviving_bullet_indices: number[];
+}
+
+export interface MatchesDTO {
+  experience: ExperienceMatchDTO[];
+  projects: ProjectMatchDTO[];
+  skills_indices: number[];
+  education_indices: number[];
+  certificates_indices: number[];
+  languages_indices: number[];
+}
+
+export interface ApprovalRequestDTO {
+  matches: MatchesDTO;
 }
 
 export interface TaskStatusDTO {
