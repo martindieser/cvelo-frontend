@@ -1,5 +1,5 @@
 /**
- * Data Transfer Objects (DTOs) for CurriAI
+ * Data Transfer Objects (DTOs) for CVealo
  * These represent the raw data structure for API communication, following snake_case where the API requires.
  */
 

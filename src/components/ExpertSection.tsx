@@ -22,7 +22,7 @@ const ExpertSection = () => {
             "Hola, soy Maja. Ayudo a estudiantes, profesionales y gerentes a encontrar carreras que se ajusten a sus metas y valores. Utilizo estrategias no tradicionales para acceder al mercado laboral oculto y destacar entre los candidatos."
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6 text-left">
-            "Me asocié con <strong className="text-foreground">CurriAI</strong> para dar a mis clientes una ventaja: automatiza los ajustes del currículum para cada oferta, asegurando que cumplan con los estándares ATS sin el esfuerzo manual."
+            "Me asocié con <strong className="text-foreground">CVealo</strong> para dar a mis clientes una ventaja: automatiza los ajustes del currículum para cada oferta, asegurando que cumplan con los estándares ATS sin el esfuerzo manual."
           </p>
           <a href="#" className="text-primary font-semibold text-sm underline">
             ¡Contáctame para asesoramiento profesional!

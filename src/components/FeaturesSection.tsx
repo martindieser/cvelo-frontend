@@ -21,7 +21,7 @@ const features: FeatureViewModel[] = [
   {
     icon: TrendingUp,
     title: "Mayor tasa de entrevistas",
-    description: "Nuestros usuarios reportan un aumento significativo en las invitaciones a entrevistas tras usar CurriAI.",
+    description: "Nuestros usuarios reportan un aumento significativo en las invitaciones a entrevistas tras usar CVealo.",
   },
 ];
 

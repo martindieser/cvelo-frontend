@@ -64,7 +64,7 @@ const Settings = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1 text-center sm:text-left">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Configuración</h1>
-          <p className="text-muted-foreground">Personaliza cómo CurriAI genera tus currículums.</p>
+          <p className="text-muted-foreground">Personaliza cómo CVealo genera tus currículums.</p>
         </div>
         <div className="flex items-center gap-2 justify-center">
           <Button size="sm" className="rounded-xl font-bold gap-2 min-w-[120px]" onClick={handleSave}>

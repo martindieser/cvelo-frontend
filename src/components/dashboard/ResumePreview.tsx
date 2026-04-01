@@ -115,7 +115,7 @@ const ResumePreview = ({ onBack, data, activeHighlight, onHighlightClick }: Resu
                 <DrawerHeader className="text-left px-6">
                   <DrawerTitle className="text-xl font-bold flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-primary" />
-                    Insights de CurriAI
+                    Insights de CVealo
                   </DrawerTitle>
                 </DrawerHeader>
                 <div className="px-6 overflow-y-auto custom-scrollbar pb-10">

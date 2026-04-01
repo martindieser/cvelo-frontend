@@ -112,7 +112,7 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItem
       <div className="p-4 border-t border-border mt-auto">
         <div className="bg-muted/50 rounded-xl p-4 text-center">
           <p className="text-xs text-muted-foreground mb-2">¿Necesitas ayuda?</p>
-          <a href="mailto:hola@curriai.co" className="text-xs font-bold text-primary hover:underline">hola@curriai.co</a>
+          <a href="mailto:hola@CVealo.co" className="text-xs font-bold text-primary hover:underline">hola@CVealo.co</a>
         </div>
       </div>
     </div>

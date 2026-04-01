@@ -1,5 +1,5 @@
 /**
- * ViewModels for CurriAI
+ * ViewModels for CVealo
  * These structures represent the data exactly as it is consumed and displayed by the frontend components.
  */
 

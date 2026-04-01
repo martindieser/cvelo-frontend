@@ -107,7 +107,7 @@ const ExperienceSection = ({ items, onAdd, onUpdate, onDelete }: ExperienceSecti
             </div>
             <div className="space-y-2">
               <Label htmlFor="company">Compañía</Label>
-              <Input id="company" value={tempItem.company} onChange={(e) => setTempItem({...tempItem, company: e.target.value})} className="rounded-xl" placeholder="Ej: CurriAI Corp" />
+              <Input id="company" value={tempItem.company} onChange={(e) => setTempItem({...tempItem, company: e.target.value})} className="rounded-xl" placeholder="Ej: CVealo Corp" />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="period">Rango de fechas</Label>

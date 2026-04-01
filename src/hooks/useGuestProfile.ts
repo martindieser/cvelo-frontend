@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { UserProfileViewModel, SectionViewModel } from "@/lib/viewmodels";
 
-const GUEST_STORAGE_KEY = "curriai_guest_profile";
+const GUEST_STORAGE_KEY = "CVealo_guest_profile";
 
 const INITIAL_GUEST_PROFILE: UserProfileViewModel = {
   name: "",

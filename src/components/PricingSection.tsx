@@ -50,7 +50,7 @@ const PricingSection = () => {
             </div>
             
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-center mb-1 text-primary uppercase tracking-wider text-sm">CurriAI Pro</h3>
+              <h3 className="text-xl font-bold text-center mb-1 text-primary uppercase tracking-wider text-sm">CVealo Pro</h3>
               <p className="text-center mb-6">
                 <span className="text-5xl font-bold">24,99€</span>
                 <span className="text-muted-foreground font-medium text-lg">/mes</span>
@@ -75,7 +75,7 @@ const PricingSection = () => {
               <div className="bg-warning/15 rounded-2xl p-4 border border-warning/30 mb-8">
                 <p className="font-bold text-sm text-warning-foreground">¡Más entrevistas o te devolvemos el dinero!</p>
                 <p className="text-xs text-foreground/70 mt-1">
-                  Si no consigues más entrevistas tras usar CurriAI, puedes solicitar un reembolso.{" "}
+                  Si no consigues más entrevistas tras usar CVealo, puedes solicitar un reembolso.{" "}
                   <a href="#" className="underline font-medium hover:text-primary transition-colors">Ver reglas</a>.
                 </p>
               </div>

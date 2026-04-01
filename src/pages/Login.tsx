@@ -18,7 +18,7 @@ const Login = () => {
         <div className="flex justify-center mb-6">
           <Link to="/" className="group">
             <div className="w-32 h-32 transition-transform group-hover:scale-105">
-              <img src={logoMascot} alt="CurriAI Logo" className="w-full h-full object-contain" />
+              <img src={logoMascot} alt="CVealo Logo" className="w-full h-full object-contain" />
             </div>
           </Link>
         </div>

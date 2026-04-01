@@ -23,19 +23,19 @@ const testimonials: TestimonialViewModel[] = [
   {
     name: "Nancy H.",
     date: "26 Ago 2025",
-    text: "No estaba segura de que funcionaría, pero mis solicitudes de entrevista han aumentado desde que uso CurriAI :-)",
+    text: "No estaba segura de que funcionaría, pero mis solicitudes de entrevista han aumentado desde que uso CVealo :-)",
     avatar: "https://jobowl.co/nancy.jpg",
   },
   {
     name: "Mellony B.",
     date: "10 Oct 2025",
-    text: "Tengo 55 años y 22 de experiencia. Empezar de cero es difícil y CurriAI realmente me ha ayudado con mis CVs y la redacción.",
+    text: "Tengo 55 años y 22 de experiencia. Empezar de cero es difícil y CVealo realmente me ha ayudado con mis CVs y la redacción.",
     avatar: "https://jobowl.co/mello.png",
   },
   {
     name: "Keishia T.",
     date: "27 Oct 2025",
-    text: "¡Me encanta CurriAI! Hace que aplicar a trabajos sea mucho más fácil y rápido. ¡Realmente funciona!",
+    text: "¡Me encanta CVealo! Hace que aplicar a trabajos sea mucho más fácil y rápido. ¡Realmente funciona!",
     avatar: "https://jobowl.co/keish.png",
   },
 ];

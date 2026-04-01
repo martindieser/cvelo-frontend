@@ -153,7 +153,7 @@ const FreeBuilder = () => {
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center group">
             <div className="w-16 h-16 transition-transform group-hover:scale-110">
-              <img src={logoMascot} alt="CurriAI" className="w-full h-full object-contain" />
+              <img src={logoMascot} alt="CVealo" className="w-full h-full object-contain" />
             </div>
           </Link>
           <div className="h-6 w-px bg-border hidden sm:block" />

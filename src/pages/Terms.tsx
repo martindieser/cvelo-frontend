@@ -11,14 +11,14 @@ const Terms = () => {
           <section>
             <h2 className="text-xl font-bold text-foreground mb-4">1. Aceptación de los Términos</h2>
             <p>
-              Al acceder y utilizar CurriAI, usted acepta cumplir y estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no podrá utilizar nuestro servicio.
+              Al acceder y utilizar CVealo, usted acepta cumplir y estar sujeto a estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no podrá utilizar nuestro servicio.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-4">2. Descripción del Servicio</h2>
             <p>
-              CurriAI es una plataforma impulsada por inteligencia artificial diseñada para ayudar a los usuarios a optimizar y adaptar sus currículums a ofertas de trabajo específicas. Nos reservamos el derecho de modificar o interrumpir el servicio en cualquier momento.
+              CVealo es una plataforma impulsada por inteligencia artificial diseñada para ayudar a los usuarios a optimizar y adaptar sus currículums a ofertas de trabajo específicas. Nos reservamos el derecho de modificar o interrumpir el servicio en cualquier momento.
             </p>
           </section>
 
@@ -32,14 +32,14 @@ const Terms = () => {
           <section>
             <h2 className="text-xl font-bold text-foreground mb-4">4. Propiedad Intelectual</h2>
             <p>
-              Todo el contenido y la tecnología de CurriAI son propiedad exclusiva nuestra o de nuestros licenciantes. El uso del servicio no le otorga ningún derecho de propiedad sobre nuestros activos intelectuales.
+              Todo el contenido y la tecnología de CVealo son propiedad exclusiva nuestra o de nuestros licenciantes. El uso del servicio no le otorga ningún derecho de propiedad sobre nuestros activos intelectuales.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-bold text-foreground mb-4">5. Limitación de Responsabilidad</h2>
             <p>
-              CurriAI no garantiza el éxito en la obtención de empleo. El servicio se proporciona "tal cual" y no seremos responsables de ningún daño directo, indirecto o consecuente derivado del uso de la plataforma.
+              CVealo no garantiza el éxito en la obtención de empleo. El servicio se proporciona "tal cual" y no seremos responsables de ningún daño directo, indirecto o consecuente derivado del uso de la plataforma.
             </p>
           </section>
         </div>

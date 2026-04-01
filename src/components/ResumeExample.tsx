@@ -12,8 +12,8 @@ const ResumeExample = () => {
   return (
     <section className="py-20 px-4 bg-white border-y border-border">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">Ejemplo de adaptación con CurriAI</h2>
-        <p className="text-center text-muted-foreground mb-10">Mira los cambios que realiza CurriAI automáticamente.</p>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-2">Ejemplo de adaptación con CVealo</h2>
+        <p className="text-center text-muted-foreground mb-10">Mira los cambios que realiza CVealo automáticamente.</p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Resume preview */}
@@ -39,7 +39,7 @@ const ResumeExample = () => {
             </div>
 
             <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
-              <h3 className="font-bold mb-3">Cambios típicos que hace CurriAI</h3>
+              <h3 className="font-bold mb-3">Cambios típicos que hace CVealo</h3>
               <ul className="space-y-2 text-sm text-muted-foreground mb-6">
                 <li>• Añade palabras clave faltantes encontradas en la descripción.</li>
                 <li>• Reescribe puntos de experiencia para coincidir con los objetivos del puesto.</li>

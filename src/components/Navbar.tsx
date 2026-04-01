@@ -10,7 +10,7 @@ const Navbar = () => {
     <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
       <Link to="/" className="flex items-center group">
         <div className="w-24 h-24 flex items-center justify-center transition-transform group-hover:scale-110">
-          <img src={logoMascot} alt="CurriAI Logo" className="w-full h-full object-contain" />
+          <img src={logoMascot} alt="CVealo Logo" className="w-full h-full object-contain" />
         </div>
       </Link>
       <div className="flex items-center gap-4">

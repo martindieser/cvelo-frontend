@@ -13,8 +13,8 @@ const steps: StepViewModel[] = [
   },
   {
     num: "3.",
-    title: "CurriAI genera un CV adaptado",
-    subtitle: "CurriAI genera un currículum optimizado para los requisitos del puesto",
+    title: "CVealo genera un CV adaptado",
+    subtitle: "CVealo genera un currículum optimizado para los requisitos del puesto",
     image: "https://jobowl.co/sample_resume.png",
   },
 ];
@@ -23,7 +23,7 @@ const HowItWorks = () => {
   return (
     <section className="bg-white py-20 px-4 border-b border-border">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Cómo funciona CurriAI</h2>
+        <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Cómo funciona CVealo</h2>
         <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center">
           {steps.map((step) => (
             <div key={step.num} className="flex items-center gap-2">

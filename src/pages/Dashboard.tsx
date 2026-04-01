@@ -166,7 +166,7 @@ const Dashboard = () => {
                   fullScreen={false} 
                   message={
                     taskStatus === "PROCESSING" || taskStatus === "PENDING" 
-                      ? "CurriAI está analizando la oferta y adaptando tu CV" 
+                      ? "CVealo está analizando la oferta y adaptando tu CV" 
                       : "Generando documento final y PDF"
                   } 
                 />
