@@ -81,39 +81,42 @@ const Onboarding = () => {
     setCurrentStep(5);
   };
 
+  const executeFinalProcess = async () => {
+    if (!fileId || !jobDescription) return;
+    
+    processStarted.current = true;
+    try {
+      const result = await startOnboardingProcess(fileId, jobDescription);
+      console.log("Resultado final del onboarding:", result);
+      
+      localStorage.removeItem("onboarding_file_id");
+      localStorage.removeItem("onboarding_file_name");
+      
+      // Extraer resume_id buscando en diferentes campos comunes
+      const resumeId = result?.resume_id || result?.id || (typeof result === 'string' ? result : null);
+      console.log("ID extraído para redirección:", resumeId);
+      
+      setTimeout(() => {
+        if (resumeId) {
+          const url = `/dashboard?resumeId=${resumeId}`;
+          console.log("Redirigiendo a:", url);
+          navigate(url);
+        } else {
+          console.warn("No se encontró resumeId en el resultado, redirigiendo a dashboard general.");
+          navigate("/dashboard");
+        }
+      }, 1500);
+    } catch (err) {
+      console.error("Error en el proceso real:", err);
+      // NO reseteamos processStarted.current para evitar reintentos automáticos del useEffect
+    }
+  };
+
   useEffect(() => {
     if (currentStep === 5 && fileId && jobDescription && !processStarted.current) {
-      processStarted.current = true;
-      const runProcess = async () => {
-        try {
-          const result = await startOnboardingProcess(fileId, jobDescription);
-          console.log("Resultado final del onboarding:", result);
-          
-          localStorage.removeItem("onboarding_file_id");
-          localStorage.removeItem("onboarding_file_name");
-          
-          // Extraer resume_id buscando en diferentes campos comunes
-          const resumeId = result?.resume_id || result?.id || (typeof result === 'string' ? result : null);
-          console.log("ID extraído para redirección:", resumeId);
-          
-          setTimeout(() => {
-            if (resumeId) {
-              const url = `/dashboard?resumeId=${resumeId}`;
-              console.log("Redirigiendo a:", url);
-              navigate(url);
-            } else {
-              console.warn("No se encontró resumeId en el resultado, redirigiendo a dashboard general.");
-              navigate("/dashboard");
-            }
-          }, 1500);
-        } catch (err) {
-          console.error("Error en el proceso real:", err);
-          processStarted.current = false; 
-        }
-      };
-      runProcess();
+      executeFinalProcess();
     }
-  }, [currentStep, fileId, jobDescription, startOnboardingProcess, navigate]);
+  }, [currentStep, fileId, jobDescription]);
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -171,7 +174,7 @@ const Onboarding = () => {
               <StepFinalProcess 
                 apiStatus={apiStatus} 
                 apiError={apiError} 
-                onRetry={() => setCurrentStep(1)} 
+                onRetry={executeFinalProcess} 
               />
             )}
 
