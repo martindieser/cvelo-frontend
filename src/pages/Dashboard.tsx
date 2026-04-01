@@ -16,19 +16,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, RefreshCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import ResumePreview from "@/components/dashboard/ResumePreview";
+import InsightsPanel from "@/components/dashboard/InsightsPanel";
 import TailorCV from "@/components/dashboard/TailorCV";
 import PersonalInfo from "@/components/dashboard/PersonalInfo";
 import MyDocuments from "@/components/dashboard/MyDocuments";
 import Settings from "@/components/dashboard/Settings";
+import LoadingScreen from "@/components/LoadingScreen";
 import BuyCredits from "@/components/dashboard/BuyCredits";
-import EnhanceResumeFlow from "@/components/dashboard/EnhanceResumeFlow";
 import { AdaptedResumeViewModel } from "@/lib/viewmodels";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePayment } from "@/hooks/usePayment";
+import { useTailoredResume } from "@/hooks/useTailoredResume";
+import ValidationIntermediary from "@/components/on-boarding/ValidationIntermediary";
 
 const Dashboard = () => {
+// ... existing code ...
   const [searchParams, setSearchParams] = useSearchParams();
   const resumeIdParam = searchParams.get("resumeId");
 
@@ -36,18 +44,17 @@ const Dashboard = () => {
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isTailored, setIsTailored] = useState(false);
-  const [existingResumeId, setExistingResumeId] = useState<string | null>(null);
+  const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const [docsPage, setDocsPage] = useState(1);
   const [jobDescription, setJobDescription] = useState("");
 
-  const { profile } = useUserProfile();
+  const { profile, loading: profileLoading } = useUserProfile();
   const { status: paymentStatus } = usePayment();
   
   // Efecto para cargar automáticamente un CV desde la URL (Onboarding flow)
   useEffect(() => {
     if (resumeIdParam && profile) {
-      setExistingResumeId(resumeIdParam);
-      setIsTailored(true);
+      handleViewDocument({ id: resumeIdParam } as AdaptedResumeViewModel);
       // Limpiamos el parámetro para que no se recargue al navegar
       setSearchParams({}, { replace: true });
     }
@@ -57,30 +64,63 @@ const Dashboard = () => {
   const isAwaitingPayment = paymentStatus === "awaiting_payment";
   const finalPricingOpen = isPricingOpen || isAwaitingPayment;
 
-  const handleAdaptCV = (description: string) => {
+  const { 
+    tailoredResume, 
+    generating: tailoringGenerating, 
+    loading: tailoringLoading,
+    error: tailoringError,
+    currentTaskId,
+    taskStatus,
+    taskResult,
+    generateResume, 
+    approveResume,
+    fetchTailoredResume,
+    clearTailoredResume,
+    clearError
+  } = useTailoredResume();
+
+  const handleAdaptCV = async (description: string) => {
     if (!profile) return;
-    setJobDescription(description);
-    setExistingResumeId(null);
-    setIsTailored(true);
+    setIsTailored(true); // Mostrar pantalla de carga/vista previa inmediatamente
+    try {
+      await generateResume(description);
+    } catch (err) {
+      console.error("Failed to generate resume", err);
+    }
   };
 
-  const handleViewDocument = (doc: AdaptedResumeViewModel) => {
+  const handleApprove = async (matches: any) => {
     if (!profile) return;
-    setExistingResumeId(doc.id);
-    setIsTailored(true);
+    try {
+      await approveResume(matches, profile);
+    } catch (err) {
+      console.error("Error approving task:", err);
+    }
   };
 
-  const handleBackToMain = () => {
+  const handleViewDocument = async (doc: AdaptedResumeViewModel) => {
+    if (!profile) return;
+    setIsTailored(true); // Mostrar pantalla de carga inmediatamente
+    try {
+      await fetchTailoredResume(doc.id, profile);
+    } catch (err) {
+      console.error("Failed to fetch resume", err);
+      // No ponemos isTailored en false aquí para permitir que se muestre el error en la UI
+    }
+  };
+
+  const handleBackToTailor = () => {
     setIsTailored(false);
-    setExistingResumeId(null);
+    clearTailoredResume();
   };
 
   const handleNewAdapt = () => {
     setIsTailored(false);
-    setExistingResumeId(null);
-    setJobDescription("");
+    clearTailoredResume();
     setActiveTab("tailor");
   };
+
+  const isLoading = tailoringLoading || (isTailored && !tailoredResume && !tailoringGenerating && !tailoringError);
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
@@ -91,7 +131,7 @@ const Dashboard = () => {
           setActiveTab(tab);
           // Si cambiamos de pestaña manualmente, cerramos la vista de un CV específico
           setIsTailored(false);
-          setExistingResumeId(null);
+          clearTailoredResume();
         }} 
         onPricingClick={() => setIsPricingOpen(true)}
       />
@@ -109,13 +149,72 @@ const Dashboard = () => {
         <div className="flex-1 overflow-y-auto p-2 lg:p-8">
           <div className="max-w-[1600px] mx-auto flex flex-col xl:flex-row gap-4 lg:gap-8">
             
-            {isTailored && profile ? (
-              <EnhanceResumeFlow 
-                jobDescription={jobDescription}
-                profile={profile}
-                onBack={handleBackToMain}
-                existingResumeId={existingResumeId}
-              />
+            {isTailored ? (
+              taskStatus === "AWAITING_APPROVAL" && profile && taskResult ? (
+                <div className="flex-1 max-w-2xl mx-auto">
+                  <ValidationIntermediary 
+                    profile={profile}
+                    initialMatches={taskResult.matches}
+                    jobInfo={taskResult.job}
+                    onApprove={handleApprove}
+                    onBack={handleBackToTailor}
+                    isSubmitting={tailoringGenerating}
+                  />
+                </div>
+              ) : tailoringGenerating || isLoading ? (
+                <LoadingScreen 
+                  fullScreen={false} 
+                  message={
+                    taskStatus === "PROCESSING" || taskStatus === "PENDING" 
+                      ? "CurriAI está analizando la oferta y adaptando tu CV" 
+                      : "Generando documento final y PDF"
+                  } 
+                />
+              ) : tailoringError ? (
+                <div className="flex-1 max-w-2xl mx-auto py-12">
+                  <Alert variant="destructive" className="rounded-2xl border-destructive/20 bg-destructive/5 p-6">
+                    <AlertCircle className="h-6 w-6" />
+                    <AlertTitle className="text-lg font-bold ml-2">Error al adaptar CV</AlertTitle>
+                    <AlertDescription className="mt-4 space-y-4">
+                      <p className="text-base">
+                        {tailoringError}
+                      </p>
+                      <div className="bg-background/50 p-4 rounded-xl border border-destructive/10">
+                        <p className="text-xs font-bold uppercase tracking-wider opacity-70">ID de la tarea:</p>
+                        <p className="font-mono text-sm break-all">{currentTaskId || "No disponible"}</p>
+                      </div>
+                      <p className="text-sm opacity-80">
+                        Por favor, contacta al administrador del sitio con el ID de la tarea mencionado arriba para que podamos ayudarte.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        onClick={handleNewAdapt}
+                        className="mt-2 rounded-xl font-bold border-destructive/20 hover:bg-destructive/10 text-destructive h-11 px-6 gap-2"
+                      >
+                        <RefreshCcw className="w-4 h-4" /> Intentar de nuevo
+                      </Button>
+                    </AlertDescription>
+                  </Alert>
+                </div>
+              ) : tailoredResume ? (
+                <>
+                  {/* CENTRAL RESUME VIEW */}
+                  <ResumePreview 
+                    onBack={handleBackToTailor} 
+                    data={tailoredResume}
+                    activeHighlight={activeHighlight}
+                    onHighlightClick={setActiveHighlight}
+                  />
+
+                  {/* RIGHT PANEL */}
+                  <InsightsPanel 
+                    keywords={tailoredResume.detectedKeywords} 
+                    changes={tailoredResume.appliedChanges} 
+                    activeHighlight={activeHighlight}
+                    onHighlightClick={setActiveHighlight}
+                  />
+                </>
+              ) : null
             ) : activeTab === "tailor" ? (
               <TailorCV 
                 onAdapt={handleAdaptCV} 
