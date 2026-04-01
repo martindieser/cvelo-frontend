@@ -33,10 +33,8 @@ const Onboarding = () => {
     status: apiStatus, 
     error: apiError, 
     extractedProfile,
-    taskResult,
     uploadFile, 
-    startOnboardingProcess,
-    approveTask
+    startExtraction
   } = useOnboardingProcess();
   const navigate = useNavigate();
   const processStarted = useRef(false);
@@ -89,68 +87,38 @@ const Onboarding = () => {
     setCurrentStep(5);
   };
 
-  const handleApprove = async (matches: any) => {
-    try {
-      const result = await approveTask(matches);
-      handleProcessCompletion(result);
-    } catch (err) {
-      console.error("Error approving task:", err);
-    }
-  };
-
   const handleBack = () => {
     setCurrentStep(1); // Volver al paso de Job Description
     processStarted.current = false;
   };
 
-  const handleProcessCompletion = (result: any) => {
-    console.log("Resultado final del onboarding:", result);
+  const handleProcessCompletion = (resumeId: string) => {
+    console.log("Onboarding completado con éxito, resumeId:", resumeId);
     
     localStorage.removeItem("onboarding_file_id");
     localStorage.removeItem("onboarding_file_name");
     
-    // Extraer resume_id buscando en diferentes campos comunes
-    const resumeId = result?.resume_id || result?.id || (typeof result === 'string' ? result : null);
-    console.log("ID extraído para redirección:", resumeId);
-    
     setTimeout(() => {
-      if (resumeId) {
-        const url = `/dashboard?resumeId=${resumeId}`;
-        console.log("Redirigiendo a:", url);
-        navigate(url);
-      } else {
-        console.warn("No se encontró resumeId en el resultado, redirigiendo a dashboard general.");
-        navigate("/dashboard");
-      }
+      navigate(`/dashboard?resumeId=${resumeId}`);
     }, 1500);
   };
 
   const executeFinalProcess = async () => {
-    if (!fileId || !jobDescription) return;
+    if (!fileId) return;
     
     processStarted.current = true;
     try {
-      const result = await startOnboardingProcess(fileId, jobDescription);
-      
-      // Si el resultado es el de AWAITING_APPROVAL, no redirigimos todavía
-      if (result && result.status === "AWAITING_APPROVAL") {
-        console.log("Esperando aprobación del usuario...");
-        return;
-      }
-      
-      // Si ya está completado (aunque el flujo nuevo siempre pasa por approval, 
-      // mantenemos compatibilidad por si acaso)
-      handleProcessCompletion(result);
+      await startExtraction(fileId);
     } catch (err) {
-      console.error("Error en el proceso real:", err);
+      console.error("Error en la extracción de datos:", err);
     }
   };
 
   useEffect(() => {
-    if (currentStep === 5 && fileId && jobDescription && !processStarted.current) {
+    if (currentStep === 5 && fileId && !processStarted.current) {
       executeFinalProcess();
     }
-  }, [currentStep, fileId, jobDescription]);
+  }, [currentStep, fileId]);
 
   return (
     <div className="min-h-screen bg-background font-body">
@@ -209,10 +177,9 @@ const Onboarding = () => {
                 apiStatus={apiStatus} 
                 apiError={apiError} 
                 onRetry={executeFinalProcess}
-                onBack={handleBack}
+                onComplete={handleProcessCompletion}
                 extractedProfile={extractedProfile}
-                taskResult={taskResult}
-                onApprove={handleApprove}
+                jobDescription={jobDescription}
               />
             )}
 

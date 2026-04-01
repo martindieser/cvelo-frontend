@@ -2,17 +2,18 @@ import { FileText, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadingScreen from "@/components/LoadingScreen";
-import ValidationIntermediary from "./ValidationIntermediary";
-import { UserProfileDTO, MatchesDTO } from "@/lib/dtos";
+import EnhanceResumeFlow from "@/components/dashboard/EnhanceResumeFlow";
+import { UserProfileDTO } from "@/lib/dtos";
+import { UserProfileViewModel } from "@/lib/viewmodels";
 
 interface StepFinalProcessProps {
   apiStatus: string;
   apiError: string | null;
   onRetry: () => void;
   onBack?: () => void;
+  onComplete?: (resumeId: string) => void;
   extractedProfile?: UserProfileDTO | null;
-  taskResult?: any;
-  onApprove?: (matches: MatchesDTO) => void;
+  jobDescription?: string;
 }
 
 const StepFinalProcess = ({ 
@@ -20,19 +21,19 @@ const StepFinalProcess = ({
   apiError, 
   onRetry, 
   onBack,
-  extractedProfile, 
-  taskResult,
-  onApprove 
+  onComplete,
+  extractedProfile,
+  jobDescription
 }: StepFinalProcessProps) => {
-  if (apiStatus === "awaiting_approval" && extractedProfile && taskResult && onApprove) {
+  // Cuando ya tenemos el perfil extraído, le pasamos el control a EnhanceResumeFlow
+  if (apiStatus === "completed" && extractedProfile && jobDescription) {
     return (
-      <ValidationIntermediary 
-        profile={extractedProfile}
-        initialMatches={taskResult.matches}
-        jobInfo={taskResult.job}
-        onApprove={onApprove}
-        onBack={onBack}
-        isSubmitting={apiStatus === "enhancing"} 
+      <EnhanceResumeFlow 
+        jobDescription={jobDescription}
+        profile={extractedProfile as any as UserProfileViewModel} // El DTO y ViewModel de profile son compatibles para visualización
+        onBack={onBack!} // Se marca como requerido en EnhanceResumeFlow pero si es undefined no mostrará el botón
+        onComplete={onComplete}
+        showFinalPreview={false} // En onboarding no queremos la preview final aquí, sino redirigir
       />
     );
   }
@@ -58,12 +59,7 @@ const StepFinalProcess = ({
       ) : (
         <LoadingScreen 
           fullScreen={false} 
-          message={
-            apiStatus === "processing" ? "Analizando perfil y avisos..." : 
-            apiStatus === "enhancing" ? "Redactando CV optimizado y generando PDF..." : 
-            apiStatus === "completed" ? "¡Éxito! Redirigiendo" :
-            "Preparando documentos"
-          } 
+          message="Analizando tu perfil para extraer tus habilidades..." 
         />
       )}
     </div>
