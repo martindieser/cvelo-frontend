@@ -7,6 +7,8 @@ import Index from "./pages/Index.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import Login from "./pages/Login.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Terms from "./pages/Terms.tsx";
+import Privacy from "./pages/Privacy.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route 
               path="/dashboard" 
               element={

@@ -1,18 +1,24 @@
+import { Link } from "react-router-dom";
+
 const Footer = () => {
   return (
-    <footer className="border-t py-8 px-4 bg-white">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">© 2026 CurriAI</p>
-        <div className="flex flex-wrap gap-6 text-sm">
-          <a href="#" className="text-foreground hover:underline">Blog</a>
-          <a href="#" className="text-foreground hover:underline">Programa de Afiliados</a>
-          <a href="#" className="text-foreground hover:underline">Términos y Condiciones</a>
-          <a href="#" className="text-foreground hover:underline">Privacidad</a>
-          <a href="#" className="text-foreground hover:underline">Contacto</a>
+    <footer className="border-t py-12 px-4 bg-white font-body">
+      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex flex-col items-center md:items-start gap-2">
+          <p className="text-lg font-black tracking-tighter">CurriAI</p>
+          <p className="text-sm text-muted-foreground">© 2026 CurriAI. Todos los derechos reservados.</p>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-muted-foreground">Recursos</p>
-          <a href="#" className="text-sm hover:underline">Ejemplos de Resumen de CV</a>
+        
+        <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
+          <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+            Términos y Condiciones
+          </Link>
+          <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+            Privacidad
+          </Link>
+          <a href="mailto:soporte@curriai.com" className="text-muted-foreground hover:text-primary transition-colors">
+            Contacto
+          </a>
         </div>
       </div>
     </footer>
