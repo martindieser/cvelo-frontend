@@ -13,8 +13,7 @@ interface EnhanceResumeFlowProps {
   jobDescription: string;
   profile: UserProfileViewModel;
   onBack: () => void;
-  onComplete?: (resumeId: string) => void;
-  showFinalPreview?: boolean;
+  // Opcional: si queremos pasar un ID de un resume ya existente para solo visualizarlo
   existingResumeId?: string | null;
 }
 
@@ -22,15 +21,12 @@ export default function EnhanceResumeFlow({
   jobDescription, 
   profile, 
   onBack,
-  onComplete,
-  showFinalPreview = true,
   existingResumeId = null
 }: EnhanceResumeFlowProps) {
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   
   const { 
     tailoredResume, 
-// ... inside useEffect for completion ...
     generating, 
     loading,
     error,
@@ -53,13 +49,6 @@ export default function EnhanceResumeFlow({
     
     return () => clearTailoredResume();
   }, [jobDescription, existingResumeId]);
-
-  // Manejar finalización para el modo sin preview (Onboarding)
-  useEffect(() => {
-    if (!showFinalPreview && tailoredResume && onComplete) {
-      onComplete(tailoredResume.id);
-    }
-  }, [tailoredResume, showFinalPreview, onComplete]);
 
   const handleApprove = async (matches: any) => {
     try {
@@ -137,10 +126,6 @@ export default function EnhanceResumeFlow({
 
   // 4. Resultado Final (Resume Preview + Insights)
   if (tailoredResume) {
-    if (!showFinalPreview) {
-      return <LoadingScreen fullScreen={false} message="¡CV listo! Redirigiendo al dashboard..." />;
-    }
-
     return (
       <div className="flex flex-col xl:flex-row gap-4 lg:gap-8 w-full">
         <ResumePreview 
