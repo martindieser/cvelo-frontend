@@ -86,10 +86,26 @@ const Onboarding = () => {
       processStarted.current = true;
       const runProcess = async () => {
         try {
-          await startOnboardingProcess(fileId, jobDescription);
+          const result = await startOnboardingProcess(fileId, jobDescription);
+          console.log("Resultado final del onboarding:", result);
+          
           localStorage.removeItem("onboarding_file_id");
           localStorage.removeItem("onboarding_file_name");
-          setTimeout(() => navigate("/dashboard"), 1500);
+          
+          // Extraer resume_id buscando en diferentes campos comunes
+          const resumeId = result?.resume_id || result?.id || (typeof result === 'string' ? result : null);
+          console.log("ID extraído para redirección:", resumeId);
+          
+          setTimeout(() => {
+            if (resumeId) {
+              const url = `/dashboard?resumeId=${resumeId}`;
+              console.log("Redirigiendo a:", url);
+              navigate(url);
+            } else {
+              console.warn("No se encontró resumeId en el resultado, redirigiendo a dashboard general.");
+              navigate("/dashboard");
+            }
+          }, 1500);
         } catch (err) {
           console.error("Error en el proceso real:", err);
           processStarted.current = false; 

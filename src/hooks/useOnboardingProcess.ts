@@ -79,6 +79,7 @@ export function useOnboardingProcess() {
       });
 
       const result = await pollTask(enhanceTask.task_id);
+      console.log("Adaptación completada exitosamente:", result);
       
       setStatus("completed");
       return result;

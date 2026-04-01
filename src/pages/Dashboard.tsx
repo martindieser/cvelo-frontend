@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,9 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { usePayment } from "@/hooks/usePayment";
 
 const Dashboard = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const resumeIdParam = searchParams.get("resumeId");
+
   const [activeTab, setActiveTab] = useState("tailor");
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
@@ -44,6 +48,15 @@ const Dashboard = () => {
 
   const { profile, loading: profileLoading } = useUserProfile();
   const { status: paymentStatus } = usePayment();
+  
+  // Efecto para cargar automáticamente un CV desde la URL (Onboarding flow)
+  useEffect(() => {
+    if (resumeIdParam && profile) {
+      handleViewDocument({ id: resumeIdParam } as AdaptedResumeViewModel);
+      // Limpiamos el parámetro para que no se recargue al navegar
+      setSearchParams({}, { replace: true });
+    }
+  }, [resumeIdParam, profile]);
   
   // Force dialog open if payment is pending
   const isAwaitingPayment = paymentStatus === "awaiting_payment";

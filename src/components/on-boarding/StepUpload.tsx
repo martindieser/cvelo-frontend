@@ -26,7 +26,7 @@ const StepUpload = ({ file, fileId, apiStatus, apiError, onFileUpload }: StepUpl
             type="file"
             className="hidden"
             id="cv-upload"
-            accept=".pdf,.docx"
+            accept=".pdf"
             onChange={(e) => {
               const selectedFile = e.target.files?.[0];
               if (selectedFile) onFileUpload(selectedFile);
@@ -61,7 +61,7 @@ const StepUpload = ({ file, fileId, apiStatus, apiError, onFileUpload }: StepUpl
             <p className="text-sm text-muted-foreground">
               {isUploading ? "Casi listo..." :
                fileId ? "Cargado correctamente" : 
-               isError ? apiError : "Formatos PDF o DOCX admitidos"}
+               isError ? apiError : "Formatos PDF admitidos"}
             </p>
           </div>
 
