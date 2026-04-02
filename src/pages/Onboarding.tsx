@@ -10,16 +10,14 @@ import { useOnboardingProcess } from "@/hooks/useOnboardingProcess";
 // Sub-componentes refactorizados
 import StepUpload from "@/components/on-boarding/StepUpload";
 import StepJobDescription from "@/components/on-boarding/StepJobDescription";
-import StepAnalysisSimulated from "@/components/on-boarding/StepAnalysisSimulated";
 import StepAuth from "@/components/on-boarding/StepAuth";
 import StepFinalProcess from "@/components/on-boarding/StepFinalProcess";
 
 const steps = [
   { id: 1, title: "Sube tu CV", description: "Carga tu archivo actual (PDF o DOCX)" },
   { id: 2, title: "Oferta de trabajo", description: "Pega la descripción del puesto que te interesa" },
-  { id: 3, title: "Analizando", description: "Nuestra IA está trabajando para ti" },
-  { id: 4, title: "¡Casi listo!", description: "Crea tu cuenta para ver tu CV optimizado" },
-  { id: 5, title: "Finalizando", description: "Generando tu documento adaptado" },
+  { id: 3, title: "¡Casi listo!", description: "Crea tu cuenta para ver tu CV optimizado" },
+  { id: 4, title: "Finalizando", description: "Generando tu documento adaptado" },
 ];
 
 const Onboarding = () => {
@@ -43,7 +41,7 @@ const Onboarding = () => {
 
   // Redirigir si ya está autenticado (Onboarding es solo para nuevos)
   useEffect(() => {
-    if (isAuthenticated && currentStep < 5) {
+    if (isAuthenticated && currentStep < 4) {
       navigate("/dashboard");
     }
   }, [isAuthenticated, navigate, currentStep]);
@@ -69,24 +67,13 @@ const Onboarding = () => {
   }, [fileId, file]);
 
   const nextStep = () => {
-    if (currentStep === 2) {
-      handleSimulatedProcess();
-    } else {
-      setCurrentStep((prev) => prev + 1);
-    }
+    setCurrentStep((prev) => prev + 1);
   };
 
   const prevStep = () => setCurrentStep((prev) => prev - 1);
 
-  const handleSimulatedProcess = () => {
-    setCurrentStep(3);
-    setTimeout(() => {
-      setCurrentStep(4);
-    }, 3500);
-  };
-
   const handleRegisterSuccess = () => {
-    setCurrentStep(5);
+    setCurrentStep(4);
   };
 
   const handleApprove = async (matches: any) => {
@@ -147,7 +134,7 @@ const Onboarding = () => {
   };
 
   useEffect(() => {
-    if (currentStep === 5 && fileId && jobDescription && !processStarted.current) {
+    if (currentStep === 4 && fileId && jobDescription && !processStarted.current) {
       executeFinalProcess();
     }
   }, [currentStep, fileId, jobDescription]);
@@ -200,11 +187,9 @@ const Onboarding = () => {
               />
             )}
 
-            {currentStep === 3 && <StepAnalysisSimulated />}
+            {currentStep === 3 && <StepAuth onSuccess={handleRegisterSuccess} />}
 
-            {currentStep === 4 && <StepAuth onSuccess={handleRegisterSuccess} />}
-
-            {currentStep === 5 && (
+            {currentStep === 4 && (
               <StepFinalProcess 
                 apiStatus={apiStatus} 
                 apiError={apiError} 
