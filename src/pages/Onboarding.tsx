@@ -35,17 +35,19 @@ const Onboarding = () => {
     error: apiError, 
     extractedProfile,
     uploadFile, 
-    extractProfile
+    extractProfile,
+    reset: resetApiState
   } = useOnboardingProcess();
   const navigate = useNavigate();
   const processStarted = useRef(false);
 
   // Redirigir si ya está autenticado (Onboarding es solo para nuevos)
+  // Pero permitir quedarse si hay un proceso activo o estamos en el paso final
   useEffect(() => {
-    if (isAuthenticated && currentStep < 4) {
+    if (isAuthenticated && currentStep === 1 && !fileId && !jobDescription) {
       navigate("/dashboard");
     }
-  }, [isAuthenticated, navigate, currentStep]);
+  }, [isAuthenticated, navigate, currentStep, fileId, jobDescription]);
 
   const handleFileUpload = async (selectedFile: File) => {
     if (fileId) return;
@@ -55,9 +57,25 @@ const Onboarding = () => {
       setFileId(id);
       localStorage.setItem("onboarding_file_id", id);
       localStorage.setItem("onboarding_file_name", selectedFile.name);
+      
+      // Si ya tenemos descripción y estamos autenticados (venimos de un error en el paso 4)
+      // saltamos directamente de vuelta al paso 4 para procesar el nuevo archivo
+      if (jobDescription && isAuthenticated) {
+        setCurrentStep(4);
+      }
     } catch (err) {
       console.error("Error al subir el archivo inicialmente:", err);
     }
+  };
+
+  const handleResetFile = () => {
+    setFile(null);
+    setFileId(null);
+    localStorage.removeItem("onboarding_file_id");
+    localStorage.removeItem("onboarding_file_name");
+    resetApiState();
+    processStarted.current = false;
+    setCurrentStep(1);
   };
 
   useEffect(() => {
@@ -160,12 +178,24 @@ const Onboarding = () => {
                 {apiStatus === "processing" ? (
                   <LoadingScreen fullScreen={false} message="Analizando tu perfil..." />
                 ) : apiStatus === "error" ? (
-                  <div className="text-center space-y-4">
-                    <Alert variant="destructive" className="rounded-2xl">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{apiError || "Error al procesar el perfil"}</AlertDescription>
-                    </Alert>
-                    <Button onClick={executeExtraction} variant="outline" className="rounded-xl">Reintentar</Button>
+                  <div className="text-center space-y-6 animate-in fade-in zoom-in-95">
+                    <div className="bg-destructive/10 w-20 h-20 rounded-full flex items-center justify-center text-destructive mx-auto">
+                      <AlertCircle className="w-10 h-10" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black">No pudimos procesar este archivo</h3>
+                      <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                        Asegúrate de que el PDF sea legible y contenga información sobre tu experiencia.
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                      <Button onClick={executeExtraction} variant="outline" className="rounded-xl font-bold px-6">
+                        Reintentar
+                      </Button>
+                      <Button onClick={handleResetFile} variant="default" className="rounded-xl font-black px-6 shadow-lg shadow-primary/20">
+                        Subir otro archivo
+                      </Button>
+                    </div>
                   </div>
                 ) : extractedProfile ? (
                   <ResumeEnhancerFlow 

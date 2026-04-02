@@ -191,6 +191,14 @@ export function useOnboardingProcess() {
     }
   }, [apiCall, enhanceTaskId, pollTask]);
 
+  const reset = useCallback(() => {
+    setStatus("idle");
+    setError(null);
+    setExtractedProfile(null);
+    setTaskResult(null);
+    setEnhanceTaskId(null);
+  }, []);
+
   return {
     status,
     error,
@@ -199,6 +207,7 @@ export function useOnboardingProcess() {
     uploadFile,
     extractProfile,
     startOnboardingProcess,
-    approveTask
+    approveTask,
+    reset
   };
 }
