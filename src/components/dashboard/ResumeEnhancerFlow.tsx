@@ -12,19 +12,22 @@ import { UserProfileViewModel, TailoredResumeViewModel } from "@/lib/viewmodels"
 interface ResumeEnhancerFlowProps {
   profile: UserProfileViewModel;
   initialJobDescription?: string;
-  onComplete: (resume: TailoredResumeViewModel) => void;
+  onComplete?: (resume: any) => void;
   onCancel?: () => void;
+  autoStart?: boolean;
 }
 
 const ResumeEnhancerFlow = ({ 
   profile, 
   initialJobDescription = "", 
   onComplete,
-  onCancel 
+  onCancel,
+  autoStart = false
 }: ResumeEnhancerFlowProps) => {
   const navigate = useNavigate();
-  const [isStarted, setIsStarted] = useState(false);
+  const [isStarted, setIsStarted] = useState(autoStart && !!initialJobDescription);
   const [jobDescription, setJobDescription] = useState(initialJobDescription);
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
 
   const { 
     tailoredResume, 
@@ -39,10 +42,19 @@ const ResumeEnhancerFlow = ({
     clearTailoredResume,
   } = useTailoredResume();
 
+  // Auto-start adaptation if requested
+  useEffect(() => {
+    if (autoStart && initialJobDescription && !hasAutoStarted) {
+      setHasAutoStarted(true);
+      handleAdaptCV(initialJobDescription);
+    }
+  }, [autoStart, initialJobDescription, hasAutoStarted]);
+
   // Redirigir y notificar al padre cuando el CV esté listo
   useEffect(() => {
     if (tailoredResume) {
-      onComplete(tailoredResume);
+      if (onComplete) onComplete(tailoredResume);
+      // Siempre navegamos al terminar con éxito
       navigate(`/dashboard/tailor/${tailoredResume.id}`, { replace: true });
     }
   }, [tailoredResume, onComplete, navigate]);
