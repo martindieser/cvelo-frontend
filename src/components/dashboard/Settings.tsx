@@ -20,13 +20,19 @@ import LoadingScreen from "@/components/LoadingScreen";
 import TemplateSelector from "@/components/cv-editor/TemplateSelector";
 import SectionsOrderEditor from "@/components/cv-editor/SectionsOrderEditor";
 
-const Settings = () => {
+interface SettingsProps {
+  showContinue?: boolean;
+  onContinue?: () => void;
+}
+
+const Settings = ({ showContinue = false, onContinue }: SettingsProps) => {
   const { settings, loading: settingsLoading, updateSettings } = useUserSettings();
   const { config, loading: configLoading } = useConfig();
   const [language, setLanguage] = useState("es");
   const [template, setTemplate] = useState("harvard");
   const [sections, setSections] = useState<SectionViewModel[]>([]);
   const [isSaved, setIsSaved] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -43,14 +49,20 @@ const Settings = () => {
     return <LoadingScreen fullScreen={false} message="Cargando tu configuración" />;
   }
 
-  const handleSave = () => {
-    updateSettings({
-      language,
-      template,
-      sectionsOrder: sections
-    });
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+  const handleSave = async () => {
+    setIsSubmitting(true);
+    try {
+      await updateSettings({
+        language,
+        template,
+        sectionsOrder: sections
+      });
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+      if (onContinue) onContinue();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleToggleVisibility = (id: string) => {
@@ -60,20 +72,36 @@ const Settings = () => {
   };
 
   return (
-    <div className="flex-1 w-full max-w-4xl mx-auto space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 font-body">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1 text-center sm:text-left">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Configuración</h1>
-          <p className="text-muted-foreground">Personaliza cómo CVealo genera tus currículums.</p>
+    <div className={`flex-1 w-full max-w-4xl mx-auto space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 font-body ${showContinue ? 'pt-4' : ''}`}>
+      {!showContinue && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1 text-center sm:text-left">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Configuración</h1>
+            <p className="text-muted-foreground">Personaliza cómo CVealo genera tus currículums.</p>
+          </div>
+          <div className="flex items-center gap-2 justify-center">
+            <Button size="sm" className="rounded-xl font-bold gap-2 min-w-[120px]" onClick={handleSave}>
+              {isSaved ? <><Check className="w-4 h-4" /> Guardado</> : <><Save className="w-4 h-4" /> Guardar</>}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 justify-center">
-          <Button size="sm" className="rounded-xl font-bold gap-2 min-w-[120px]" onClick={handleSave}>
-            {isSaved ? <><Check className="w-4 h-4" /> Guardado</> : <><Save className="w-4 h-4" /> Guardar</>}
-          </Button>
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {showContinue && (
+        <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 md:p-8 space-y-4 mb-8">
+          <div className="flex items-center gap-3 text-left">
+            <div className="bg-primary/10 p-2 rounded-xl">
+              <Globe className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black italic tracking-tight">Preferencias del Documento</h3>
+              <p className="text-sm text-muted-foreground">Configura cómo quieres que se vea y se redacte tu currículum final.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
         <Card className="border-border shadow-sm rounded-2xl md:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2"><Globe className="w-5 h-5 text-primary" /> Idioma</CardTitle>
@@ -105,6 +133,27 @@ const Settings = () => {
           <TemplateSelector templates={config.templates} selectedId={template} onSelect={setTemplate} />
         </div>
       </div>
+
+      {showContinue && (
+        <div className="pt-8 border-t border-border flex justify-end">
+          <Button 
+            onClick={handleSave} 
+            disabled={isSubmitting}
+            className="w-full md:w-auto py-8 px-12 rounded-2xl font-black text-xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 gap-3"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                Guardando...
+              </div>
+            ) : (
+              <>
+                Continuar al análisis de IA <Check className="w-6 h-6" />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -12,6 +12,7 @@ import StepUpload from "@/components/on-boarding/StepUpload";
 import StepJobDescription from "@/components/on-boarding/StepJobDescription";
 import StepAuth from "@/components/on-boarding/StepAuth";
 import ResumeEnhancerFlow from "@/components/dashboard/ResumeEnhancerFlow";
+import Settings from "@/components/dashboard/Settings";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -28,6 +29,7 @@ const Onboarding = () => {
   const [file, setFile] = useState<File | null>(null);
   const [fileId, setFileId] = useState<string | null>(() => localStorage.getItem("onboarding_file_id"));
   const [jobDescription, setJobDescription] = useState("");
+  const [isReviewingSettings, setIsReviewingSettings] = useState(false);
   
   const { isAuthenticated } = useAuth();
   const { 
@@ -108,6 +110,7 @@ const Onboarding = () => {
     processStarted.current = true;
     try {
       await extractProfile(fileId);
+      setIsReviewingSettings(true);
     } catch (err) {
       console.error("Error en la extracción:", err);
     }
@@ -197,6 +200,11 @@ const Onboarding = () => {
                       </Button>
                     </div>
                   </div>
+                ) : isReviewingSettings && extractedProfile ? (
+                  <Settings 
+                    showContinue={true} 
+                    onContinue={() => setIsReviewingSettings(false)} 
+                  />
                 ) : extractedProfile ? (
                   <ResumeEnhancerFlow 
                     profile={extractedProfile}
