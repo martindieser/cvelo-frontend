@@ -54,7 +54,22 @@ export function useUserProfile() {
           language: data.settings.language,
           tone: data.settings.tone,
           template: data.settings.template,
-          sectionsOrder: data.settings.sections_order.map(s => ({ id: s.id, name: s.id.charAt(0).toUpperCase() + s.id.slice(1) }))
+          sectionsOrder: data.settings.sections_order.map(s => {
+            const names: Record<string, string> = {
+              summary: "Resumen",
+              experience: "Experiencia",
+              education: "Educación",
+              skills: "Habilidades",
+              languages: "Idiomas",
+              projects: "Proyectos",
+              certificates: "Certificaciones"
+            };
+            return { 
+              id: s.id, 
+              name: names[s.id] || (s.id.charAt(0).toUpperCase() + s.id.slice(1)), 
+              visible: s.visible ?? true 
+            };
+          })
         }
       };
 

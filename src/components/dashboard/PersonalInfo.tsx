@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { ExternalLink, Sparkles } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { UserProfileViewModel } from "@/lib/viewmodels";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 import GeneralSection from "@/components/cv-editor/GeneralSection";
 import SummarySection from "@/components/cv-editor/SummarySection";
@@ -21,6 +24,7 @@ interface DashboardContext {
 
 const PersonalInfo = () => {
   const { profile, updateProfile } = useOutletContext<DashboardContext>();
+  const navigate = useNavigate();
 
   // Estados para confirmación de borrado
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -33,6 +37,28 @@ const PersonalInfo = () => {
   if (!profile) {
     return <LoadingScreen fullScreen={false} message="Cargando tu información" />;
   }
+
+  const handleExportToEditor = () => {
+    try {
+      // Clave usada por el FreeBuilder (GuestProfile)
+      const GUEST_STORAGE_KEY = "CVealo_guest_profile";
+      
+      // Guardar el perfil actual en localStorage
+      localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(profile));
+      
+      toast.success("¡Datos exportados con éxito!", {
+        description: "Redirigiendo al editor en vivo...",
+      });
+
+      // Redirigir al editor gratuito
+      setTimeout(() => {
+        navigate("/free-builder");
+      }, 500);
+    } catch (err) {
+      console.error("Error exporting profile:", err);
+      toast.error("Error al exportar los datos.");
+    }
+  };
 
   // Handlers para confirmación de borrado
   const openDeleteConfirm = (type: 'experience' | 'education' | 'social' | 'language' | 'project', id: string, name: string) => {
@@ -62,11 +88,21 @@ const PersonalInfo = () => {
 
   return (
     <div className="flex-1 w-full max-w-5xl mx-auto space-y-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 font-body">
-      <div className="space-y-2 text-center lg:text-left">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Información Personal</h1>
-        <p className="text-muted-foreground">
-          Gestiona los datos que se utilizan para generar tus currículums. Mantenlos actualizados para mejores resultados.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-2 text-center lg:text-left">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Información Personal</h1>
+          <p className="text-muted-foreground">
+            Gestiona los datos que se utilizan para generar tus currículums. Mantenlos actualizados para mejores resultados.
+          </p>
+        </div>
+        
+        <Button 
+          onClick={handleExportToEditor}
+          className="rounded-xl font-bold gap-2 bg-primary/10 text-primary hover:bg-primary/20 border-none h-11 px-6 shadow-none"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span>Editor en vivo</span>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
