@@ -11,7 +11,10 @@ import { useOnboardingProcess } from "@/hooks/useOnboardingProcess";
 import StepUpload from "@/components/on-boarding/StepUpload";
 import StepJobDescription from "@/components/on-boarding/StepJobDescription";
 import StepAuth from "@/components/on-boarding/StepAuth";
-import StepFinalProcess from "@/components/on-boarding/StepFinalProcess";
+import ResumeEnhancerFlow from "@/components/dashboard/ResumeEnhancerFlow";
+import LoadingScreen from "@/components/LoadingScreen";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const steps = [
   { id: 1, title: "Sube tu CV", description: "Carga tu archivo actual (PDF o DOCX)" },
@@ -31,10 +34,8 @@ const Onboarding = () => {
     status: apiStatus, 
     error: apiError, 
     extractedProfile,
-    taskResult,
     uploadFile, 
-    startOnboardingProcess,
-    approveTask
+    extractProfile
   } = useOnboardingProcess();
   const navigate = useNavigate();
   const processStarted = useRef(false);
@@ -76,75 +77,38 @@ const Onboarding = () => {
     setCurrentStep(4);
   };
 
-  const handleApprove = async (matches: any) => {
-    try {
-      const result = await approveTask(matches);
-      handleProcessCompletion(result);
-    } catch (err) {
-      console.error("Error approving task:", err);
-    }
-  };
-
-  const handleBack = () => {
-    setCurrentStep(1); // Volver al paso de Job Description
-    processStarted.current = false;
-  };
-
   const handleProcessCompletion = (result: any) => {
-    console.log("Resultado final del onboarding:", result);
-    
+    console.log("Onboarding completado con éxito:", result);
     localStorage.removeItem("onboarding_file_id");
     localStorage.removeItem("onboarding_file_name");
-    
-    // Extraer resume_id buscando en diferentes campos comunes
-    const resumeId = result?.resume_id || result?.id || (typeof result === 'string' ? result : null);
-    console.log("ID extraído para redirección:", resumeId);
-    
-    setTimeout(() => {
-      if (resumeId) {
-        const url = `/dashboard?resumeId=${resumeId}`;
-        console.log("Redirigiendo a:", url);
-        navigate(url);
-      } else {
-        console.warn("No se encontró resumeId en el resultado, redirigiendo a dashboard general.");
-        navigate("/dashboard");
-      }
-    }, 1500);
+    // La redirección no es inmediata para permitir al usuario ver el resultado 
+    // o el ResumeEnhancerFlow se encarga de mostrar el preview final.
   };
 
-  const executeFinalProcess = async () => {
-    if (!fileId || !jobDescription) return;
-    
+  const executeExtraction = async () => {
+    if (!fileId) return;
     processStarted.current = true;
     try {
-      const result = await startOnboardingProcess(fileId, jobDescription);
-      
-      // Si el resultado es el de AWAITING_APPROVAL, no redirigimos todavía
-      if (result && result.status === "AWAITING_APPROVAL") {
-        console.log("Esperando aprobación del usuario...");
-        return;
-      }
-      
-      // Si ya está completado (aunque el flujo nuevo siempre pasa por approval, 
-      // mantenemos compatibilidad por si acaso)
-      handleProcessCompletion(result);
+      await extractProfile(fileId);
     } catch (err) {
-      console.error("Error en el proceso real:", err);
+      console.error("Error en la extracción:", err);
     }
   };
 
   useEffect(() => {
-    if (currentStep === 4 && fileId && jobDescription && !processStarted.current) {
-      executeFinalProcess();
+    if (currentStep === 4 && fileId && !processStarted.current) {
+      executeExtraction();
     }
-  }, [currentStep, fileId, jobDescription]);
+  }, [currentStep, fileId]);
+
+  const isFinalStep = currentStep === 4;
 
   return (
     <div className="min-h-screen bg-background font-body">
       <Navbar />
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className={`${isFinalStep ? "max-w-6xl" : "max-w-2xl"} mx-auto px-4 py-12 transition-all duration-500`}>
         {/* Progress bar */}
-        <div className="flex justify-between mb-12 relative">
+        <div className="flex justify-between mb-12 relative max-w-2xl mx-auto">
           <div className="absolute top-1/2 left-0 w-full h-1 bg-muted -translate-y-1/2 z-0 rounded-full"></div>
           <div 
             className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-0 rounded-full transition-all duration-500"
@@ -164,12 +128,14 @@ const Onboarding = () => {
           ))}
         </div>
 
-        <Card className="border-border shadow-xl rounded-3xl overflow-hidden border-none bg-card/50 backdrop-blur-sm">
-          <CardHeader className="pb-2 text-center pt-8">
-            <CardTitle className="text-3xl font-black tracking-tight">{steps[currentStep - 1].title}</CardTitle>
-            <CardDescription className="text-base">{steps[currentStep - 1].description}</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8">
+        <Card className={`border-border shadow-xl rounded-3xl overflow-hidden border-none bg-card/50 backdrop-blur-sm ${isFinalStep ? "p-4" : ""}`}>
+          {!isFinalStep && (
+            <CardHeader className="pb-2 text-center pt-8">
+              <CardTitle className="text-3xl font-black tracking-tight">{steps[currentStep - 1].title}</CardTitle>
+              <CardDescription className="text-base">{steps[currentStep - 1].description}</CardDescription>
+            </CardHeader>
+          )}
+          <CardContent className={`${isFinalStep ? "p-0" : "p-8"}`}>
             {currentStep === 1 && (
               <StepUpload 
                 file={file} 
@@ -190,15 +156,28 @@ const Onboarding = () => {
             {currentStep === 3 && <StepAuth onSuccess={handleRegisterSuccess} />}
 
             {currentStep === 4 && (
-              <StepFinalProcess 
-                apiStatus={apiStatus} 
-                apiError={apiError} 
-                onRetry={executeFinalProcess}
-                onBack={handleBack}
-                extractedProfile={extractedProfile}
-                taskResult={taskResult}
-                onApprove={handleApprove}
-              />
+              <div className="min-h-[60vh] flex flex-col items-center justify-center">
+                {apiStatus === "processing" ? (
+                  <LoadingScreen fullScreen={false} message="Analizando tu perfil..." />
+                ) : apiStatus === "error" ? (
+                  <div className="text-center space-y-4">
+                    <Alert variant="destructive" className="rounded-2xl">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{apiError || "Error al procesar el perfil"}</AlertDescription>
+                    </Alert>
+                    <Button onClick={executeExtraction} variant="outline" className="rounded-xl">Reintentar</Button>
+                  </div>
+                ) : extractedProfile ? (
+                  <ResumeEnhancerFlow 
+                    profile={extractedProfile}
+                    initialJobDescription={jobDescription}
+                    autoStart={true}
+                    onComplete={handleProcessCompletion}
+                  />
+                ) : (
+                  <LoadingScreen fullScreen={false} message="Preparando flujo de optimización..." />
+                )}
+              </div>
             )}
 
             {currentStep < 3 && (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const ResumeEnhancerFlow = ({
   onComplete,
   onCancel 
 }: ResumeEnhancerFlowProps) => {
+  const navigate = useNavigate();
   const [isStarted, setIsStarted] = useState(false);
   const [jobDescription, setJobDescription] = useState(initialJobDescription);
 
@@ -37,12 +39,13 @@ const ResumeEnhancerFlow = ({
     clearTailoredResume,
   } = useTailoredResume();
 
-  // Notificar al padre cuando el CV esté listo
+  // Redirigir y notificar al padre cuando el CV esté listo
   useEffect(() => {
     if (tailoredResume) {
       onComplete(tailoredResume);
+      navigate(`/dashboard/tailor/${tailoredResume.id}`, { replace: true });
     }
-  }, [tailoredResume, onComplete]);
+  }, [tailoredResume, onComplete, navigate]);
 
   const handleAdaptCV = async (description: string) => {
     setIsStarted(true);

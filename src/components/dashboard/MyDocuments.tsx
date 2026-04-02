@@ -9,6 +9,7 @@ import {
   Calendar,
   Building2
 } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,14 +27,27 @@ import { useResumes } from "@/hooks/useResumes";
 import LoadingScreen from "@/components/LoadingScreen";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
-interface MyDocumentsProps {
-  onView: (doc: AdaptedResumeViewModel) => void;
-  currentPage: number;
-  onPageChange: (page: number) => void;
+interface DashboardContext {
+  handleViewDocument: (doc: AdaptedResumeViewModel) => void;
+  docsPage: number;
+  setDocsPage: (page: number) => void;
+  resumes: AdaptedResumeViewModel[];
+  resumesLoading: boolean;
+  deleteResume: (id: string) => Promise<void>;
+  updateResume: (id: string, updates: Partial<AdaptedResumeViewModel>) => Promise<void>;
 }
 
-const MyDocuments = ({ onView, currentPage, onPageChange }: MyDocumentsProps) => {
-  const { resumes, loading, deleteResume, updateResume } = useResumes();
+const MyDocuments = () => {
+  const { 
+    handleViewDocument: onView, 
+    docsPage: currentPage, 
+    setDocsPage: onPageChange,
+    resumes,
+    resumesLoading: loading,
+    deleteResume,
+    updateResume
+  } = useOutletContext<DashboardContext>();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const itemsPerPage = 5;
 

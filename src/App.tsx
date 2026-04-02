@@ -11,6 +11,10 @@ import Terms from "./pages/Terms.tsx";
 import Privacy from "./pages/Privacy.tsx";
 import FreeBuilder from "./pages/FreeBuilder.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import PersonalInfo from "@/components/dashboard/PersonalInfo";
+import MyDocuments from "@/components/dashboard/MyDocuments";
+import Settings from "@/components/dashboard/Settings";
+import TailorSection from "@/components/dashboard/TailorSection";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import LoadingScreen from "@/components/LoadingScreen";
 
@@ -50,8 +54,15 @@ const App = () => (
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
-              } 
-            />
+              }
+            >
+              <Route index element={<Navigate to="tailor" replace />} />
+              <Route path="tailor" element={<TailorSection />} />
+              <Route path="tailor/:resumeId" element={<TailorSection />} />
+              <Route path="info" element={<PersonalInfo />} />
+              <Route path="docs" element={<MyDocuments />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

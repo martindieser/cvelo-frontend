@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useUserProfile } from "@/hooks/useUserProfile";
+import { useOutletContext } from "react-router-dom";
 import LoadingScreen from "@/components/LoadingScreen";
+import { UserProfileViewModel } from "@/lib/viewmodels";
 
-// Nuevos componentes refactorizados
 import GeneralSection from "@/components/cv-editor/GeneralSection";
 import SummarySection from "@/components/cv-editor/SummarySection";
 import ExperienceSection from "@/components/cv-editor/ExperienceSection";
@@ -14,8 +14,13 @@ import ProjectsSection from "@/components/cv-editor/ProjectsSection";
 import CertificatesSection from "@/components/cv-editor/CertificatesSection";
 import DeleteConfirmDialog from "@/components/cv-editor/DeleteConfirmDialog";
 
+interface DashboardContext {
+  profile: UserProfileViewModel;
+  updateProfile: (newProfile: Partial<UserProfileViewModel>) => Promise<void>;
+}
+
 const PersonalInfo = () => {
-  const { profile, updateProfile, loading } = useUserProfile();
+  const { profile, updateProfile } = useOutletContext<DashboardContext>();
 
   // Estados para confirmación de borrado
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -25,11 +30,9 @@ const PersonalInfo = () => {
     name: string;
   } | null>(null);
 
-  if (loading && !profile) {
+  if (!profile) {
     return <LoadingScreen fullScreen={false} message="Cargando tu información" />;
   }
-
-  if (!profile) return null;
 
   // Handlers para confirmación de borrado
   const openDeleteConfirm = (type: 'experience' | 'education' | 'social' | 'language' | 'project', id: string, name: string) => {

@@ -6,17 +6,17 @@ import {
   TaskResponseDTO, 
   TaskStatusDTO, 
   EnhanceResumeRequestDTO,
-  TaskStatus,
-  UserProfileDTO,
   MatchesDTO,
-  ApprovalRequestDTO
+  ApprovalRequestDTO,
+  UserProfileDTO
 } from "@/lib/dtos";
+import { UserProfileViewModel } from "@/lib/viewmodels";
 
 export function useOnboardingProcess() {
   const { apiCall } = useApi();
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "enhancing" | "awaiting_approval" | "completed" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
-  const [extractedProfile, setExtractedProfile] = useState<UserProfileDTO | null>(null);
+  const [extractedProfile, setExtractedProfile] = useState<UserProfileViewModel | null>(null);
   const [enhanceTaskId, setEnhanceTaskId] = useState<string | null>(null);
   const [taskResult, setTaskResult] = useState<any>(null);
 
@@ -45,6 +45,55 @@ export function useOnboardingProcess() {
     });
   }, [apiCall]);
 
+  const mapProfile = (data: UserProfileDTO): UserProfileViewModel => ({
+    name: data.name ?? "",
+    email: data.email,
+    credits: data.credits,
+    avatar: data.avatar ?? "",
+    location: data.location ?? "",
+    phone: data.phone ?? "",
+    summary: data.summary ?? "",
+    skills: data.skills,
+    socialLinks: (data.social_links || []).map((s, i) => ({ id: i.toString(), platform: s.platform, url: s.url ?? "" })),
+    experience: (data.experience || []).map((e, i) => ({ 
+      id: i.toString(), 
+      role: e.role, 
+      company: e.company, 
+      period: e.period, 
+      details: Array.isArray(e.details) ? e.details.join("\n") : "" 
+    })),
+    education: (data.education || []).map((edu, i) => ({ 
+      id: i.toString(), 
+      degree: edu.degree, 
+      institution: edu.institution, 
+      period: edu.period 
+    })),
+    languages: (data.languages || []).map((l, i) => ({ 
+      id: i.toString(), 
+      name: l.name, 
+      level: l.level 
+    })),
+    projects: (data.projects || []).map((p, i) => ({
+      id: i.toString(),
+      title: p.title,
+      details: Array.isArray(p.details) ? p.details.join("\n") : "",
+      technologies: p.technologies ?? [],
+      link: p.link ?? "",
+      period: p.period ?? ""
+    })),
+    certificates: data.certificates || [],
+    settings: {
+      language: data.settings?.language || "es",
+      tone: data.settings?.tone || "professional",
+      template: data.settings?.template || "harvard",
+      sectionsOrder: (data.settings?.sections_order || []).map(s => ({ 
+        id: s.id, 
+        name: s.id.charAt(0).toUpperCase() + s.id.slice(1),
+        visible: s.visible ?? true
+      }))
+    }
+  });
+
   const uploadFile = useCallback(async (file: File): Promise<string> => {
     setStatus("uploading");
     try {
@@ -64,20 +113,35 @@ export function useOnboardingProcess() {
     }
   }, [apiCall]);
 
-  const startOnboardingProcess = useCallback(async (fileId: string, jobDescription: string) => {
+  const extractProfile = useCallback(async (fileId: string) => {
     setStatus("processing");
     setError(null);
-
     try {
-      // 1. Process (Extract profile)
       const processReq: ProcessResumeRequestDTO = { file_id: fileId };
       const processTask: TaskResponseDTO = await apiCall("/resumes/process", {
         method: "POST",
         body: JSON.stringify(processReq),
       });
 
-      const profile = await pollTask(processTask.task_id);
-      setExtractedProfile(profile);
+      const profileData = await pollTask(processTask.task_id);
+      const mappedProfile = mapProfile(profileData);
+      setExtractedProfile(mappedProfile);
+      setStatus("idle");
+      return mappedProfile;
+    } catch (err: any) {
+      setError(err.message || "Error al extraer el perfil.");
+      setStatus("error");
+      throw err;
+    }
+  }, [apiCall, pollTask]);
+
+  const startOnboardingProcess = useCallback(async (fileId: string, jobDescription: string) => {
+    setStatus("processing");
+    setError(null);
+
+    try {
+      // 1. Process (Extract profile)
+      const profileData = await extractProfile(fileId);
 
       // 2. Enhance (Tailor to job description)
       setStatus("enhancing");
@@ -94,7 +158,6 @@ export function useOnboardingProcess() {
         setStatus("awaiting_approval");
       });
       
-      // If result is returned directly (e.g. fast processing), handle status
       if (result && result.status !== "AWAITING_APPROVAL") {
         setStatus("completed");
       }
@@ -104,7 +167,7 @@ export function useOnboardingProcess() {
       setStatus("error");
       throw err;
     }
-  }, [apiCall, pollTask]);
+  }, [apiCall, pollTask, extractProfile]);
 
   const approveTask = useCallback(async (matches: MatchesDTO) => {
     if (!enhanceTaskId) return;
@@ -134,6 +197,7 @@ export function useOnboardingProcess() {
     extractedProfile,
     taskResult,
     uploadFile,
+    extractProfile,
     startOnboardingProcess,
     approveTask
   };

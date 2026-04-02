@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useSearchParams, useLocation, useNavigate, useParams, Outlet } from "react-router-dom";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -18,24 +18,29 @@ import {
 } from "@/components/ui/dialog";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import PersonalInfo from "@/components/dashboard/PersonalInfo";
-import MyDocuments from "@/components/dashboard/MyDocuments";
-import Settings from "@/components/dashboard/Settings";
 import LoadingScreen from "@/components/LoadingScreen";
 import BuyCredits from "@/components/dashboard/BuyCredits";
-import ResumeEnhancerFlow from "@/components/dashboard/ResumeEnhancerFlow";
-import ResumePreview from "@/components/dashboard/ResumePreview";
-import InsightsPanel from "@/components/dashboard/InsightsPanel";
 import { AdaptedResumeViewModel, TailoredResumeViewModel } from "@/lib/viewmodels";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePayment } from "@/hooks/usePayment";
 import { useTailoredResume } from "@/hooks/useTailoredResume";
+import { useResumes } from "@/hooks/useResumes";
 
 const Dashboard = () => {
+  const { resumeId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const resumeIdParam = searchParams.get("resumeId");
 
-  const [activeTab, setActiveTab] = useState("tailor");
+  // Derivar activeTab de la ruta
+  const activeTab = useMemo(() => {
+    const path = location.pathname;
+    if (path.includes("/info")) return "info";
+    if (path.includes("/docs")) return "docs";
+    if (path.includes("/settings")) return "settings";
+    return "tailor";
+  }, [location.pathname]);
+
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [docsPage, setDocsPage] = useState(1);
@@ -44,46 +49,45 @@ const Dashboard = () => {
   
   const [currentTailoredResume, setCurrentTailoredResume] = useState<TailoredResumeViewModel | null>(null);
 
-  const { profile, loading: profileLoading } = useUserProfile();
+  const { profile, loading: profileLoading, updateProfile, refreshProfile } = useUserProfile();
+  const { resumes, loading: resumesLoading, deleteResume, updateResume, refreshResumes } = useResumes();
   const { status: paymentStatus } = usePayment();
   const { fetchTailoredResume, clearTailoredResume, loading: tailoringLoading } = useTailoredResume();
   
+  // Cargar documento si hay un resumeId en la URL
   useEffect(() => {
-    if (resumeIdParam && profile) {
-      handleViewDocument({ id: resumeIdParam } as AdaptedResumeViewModel);
-      setSearchParams({}, { replace: true });
-    }
-  }, [resumeIdParam, profile]);
+    const loadResume = async () => {
+      if (resumeId && profile) {
+        setIsViewingSpecificDoc(true);
+        try {
+          const resume = await fetchTailoredResume(resumeId, profile);
+          setCurrentTailoredResume(resume);
+        } catch (err) {
+          console.error("Failed to fetch resume", err);
+          navigate("/dashboard/docs"); // Redirigir si falla
+        }
+      } else if (!resumeId) {
+        setIsViewingSpecificDoc(false);
+        setCurrentTailoredResume(null);
+        clearTailoredResume();
+      }
+    };
+    loadResume();
+  }, [resumeId, profile]);
   
   const isAwaitingPayment = paymentStatus === "awaiting_payment";
   const finalPricingOpen = isPricingOpen || isAwaitingPayment;
 
-  const handleViewDocument = async (doc: AdaptedResumeViewModel) => {
-    if (!profile) return;
-    setIsViewingSpecificDoc(true);
-    setActiveTab("tailor"); 
-    try {
-      const resume = await fetchTailoredResume(doc.id, profile);
-      setCurrentTailoredResume(resume);
-    } catch (err) {
-      console.error("Failed to fetch resume", err);
-    }
+  const handleViewDocument = (doc: AdaptedResumeViewModel) => {
+    navigate(`/dashboard/tailor/${doc.id}`);
   };
 
   const handleNewAdapt = () => {
-    setIsViewingSpecificDoc(false);
-    setCurrentTailoredResume(null);
-    clearTailoredResume();
-    setActiveTab("tailor");
+    navigate("/dashboard/tailor");
   };
 
   const handleBackToTailor = () => {
-    if (isViewingSpecificDoc) {
-      setActiveTab("docs");
-    }
-    setIsViewingSpecificDoc(false);
-    setCurrentTailoredResume(null);
-    clearTailoredResume();
+    navigate("/dashboard/docs");
   };
 
   if (profileLoading) return <LoadingScreen message="Cargando tu perfil..." />;
@@ -93,16 +97,6 @@ const Dashboard = () => {
   return (
     <div className="flex h-screen bg-background overflow-hidden font-body">
       <DashboardSidebar 
-        activeTab={activeTab} 
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          // Solo reseteamos si cambiamos a una pestaña que NO sea tailor
-          if (tab !== "tailor") {
-            setIsViewingSpecificDoc(false);
-            setCurrentTailoredResume(null);
-            clearTailoredResume();
-          }
-        }} 
         onPricingClick={() => setIsPricingOpen(true)}
       />
 
@@ -116,58 +110,27 @@ const Dashboard = () => {
 
         <div className="flex-1 overflow-y-auto p-2 lg:p-8">
           <div className="max-w-[1600px] mx-auto">
-            
-            {/* SECCIÓN TAILOR / ADAPTACIÓN */}
-            <div className={activeTab === "tailor" ? "block" : "hidden"}>
-              {currentTailoredResume ? (
-                <div className="flex flex-col xl:flex-row gap-4 lg:gap-8 w-full animate-in fade-in duration-500">
-                  <ResumePreview 
-                    onBack={handleBackToTailor} 
-                    data={currentTailoredResume}
-                    activeHighlight={activeHighlight}
-                    onHighlightClick={setActiveHighlight}
-                  />
-                  <InsightsPanel 
-                    keywords={currentTailoredResume.detectedKeywords} 
-                    changes={currentTailoredResume.appliedChanges} 
-                    activeHighlight={activeHighlight}
-                    onHighlightClick={setActiveHighlight}
-                  />
-                </div>
-              ) : tailoringLoading || (isViewingSpecificDoc && !currentTailoredResume) ? (
-                <div className="flex-1 min-h-[60vh] flex items-center justify-center">
-                  <LoadingScreen fullScreen={false} message="Cargando documento..." />
-                </div>
-              ) : profile ? (
-                <ResumeEnhancerFlow 
-                  profile={profile} 
-                  onComplete={(resume) => setCurrentTailoredResume(resume)}
-                />
-              ) : null}
-            </div>
-
-            {/* SECCIÓN INFORMACIÓN PERSONAL */}
-            <div className={activeTab === "info" ? "block" : "hidden"}>
-              <PersonalInfo />
-            </div>
-
-            {/* SECCIÓN MIS DOCUMENTOS - PERSISTENTE */}
-            <div className={activeTab === "docs" ? "block" : "hidden"}>
-              <MyDocuments onView={handleViewDocument} currentPage={docsPage} onPageChange={setDocsPage} />
-            </div>
-
-            {/* SECCIÓN CONFIGURACIÓN */}
-            <div className={activeTab === "settings" ? "block" : "hidden"}>
-              <Settings />
-            </div>
-
-            {/* OTRAS SECCIONES */}
-            {activeTab !== "tailor" && activeTab !== "info" && activeTab !== "docs" && activeTab !== "settings" && (
-              <div className="flex-1 flex items-center justify-center h-[60vh] text-muted-foreground border-2 border-dashed border-border rounded-3xl">
-                Sección {activeTab} en desarrollo...
-              </div>
-            )}
-            
+            <Outlet context={{
+              profile,
+              updateProfile,
+              refreshProfile,
+              resumes,
+              resumesLoading,
+              deleteResume,
+              updateResume,
+              refreshResumes,
+              handleViewDocument,
+              handleBackToTailor,
+              currentTailoredResume,
+              setCurrentTailoredResume,
+              tailoringLoading,
+              isViewingSpecificDoc,
+              activeHighlight,
+              setActiveHighlight,
+              docsPage,
+              setDocsPage,
+              clearTailoredResume
+            }} />
           </div>
           
           <div className="h-20 lg:hidden" />

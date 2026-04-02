@@ -8,7 +8,7 @@ import {
   Sparkles,
   Menu
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import logoMascot from "@/assets/logo-mascot.svg";
@@ -16,29 +16,27 @@ import logoMascot from "@/assets/logo-mascot.svg";
 import { useAuth } from "@/hooks/useAuth";
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   onPricingClick?: () => void;
   onItemClick?: () => void;
 }
 
-export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItemClick }: SidebarProps) => {
+export const SidebarContent = ({ onPricingClick, onItemClick }: SidebarProps) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleTabClick = (tab: string) => {
-    setActiveTab(tab);
-    if (onItemClick) onItemClick();
-  };
+  const navLinkClass = ({ isActive }: { isActive: boolean }) => 
+    `w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+      isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"
+    }`;
 
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 flex justify-center">
         <Link 
-          to="/dashboard" 
+          to="/dashboard/tailor" 
           className="group"
           onClick={() => {
-            handleTabClick("tailor");
+            if (onItemClick) onItemClick();
           }}
         >
           <div className="w-24 h-24 transition-transform group-hover:scale-110">
@@ -64,38 +62,42 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItem
         <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Principal
         </div>
-        <button 
-          onClick={() => handleTabClick("tailor")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "tailor" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        <NavLink 
+          to="/dashboard/tailor"
+          onClick={onItemClick}
+          className={navLinkClass}
         >
           <LayoutDashboard className="w-4 h-4" />
           Adaptar CV
-        </button>
-        <button 
-          onClick={() => handleTabClick("info")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "info" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        </NavLink>
+        <NavLink 
+          to="/dashboard/info"
+          onClick={onItemClick}
+          className={navLinkClass}
         >
           <User className="w-4 h-4" />
           Información Personal
-        </button>
-        <button 
-          onClick={() => handleTabClick("docs")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "docs" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        </NavLink>
+        <NavLink 
+          to="/dashboard/docs"
+          onClick={onItemClick}
+          className={navLinkClass}
         >
           <FileText className="w-4 h-4" />
           Mis Documentos
-        </button>
+        </NavLink>
 
         <div className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         Sistema
         </div>
-        <button 
-        onClick={() => handleTabClick("settings")}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeTab === "settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}
+        <NavLink 
+          to="/dashboard/settings"
+          onClick={onItemClick}
+          className={navLinkClass}
         >
-        <Settings className="w-4 h-4" />
-        Configuración
-        </button>
+          <Settings className="w-4 h-4" />
+          Configuración
+        </NavLink>
         <button 
           onClick={async () => {
             await logout();
@@ -119,14 +121,14 @@ export const SidebarContent = ({ activeTab, setActiveTab, onPricingClick, onItem
   );
 };
 
-const DashboardSidebar = ({ activeTab, setActiveTab, onPricingClick }: SidebarProps) => {
+const DashboardSidebar = ({ onPricingClick }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 bg-card border-r border-border flex-col shrink-0 h-full">
-        <SidebarContent activeTab={activeTab} setActiveTab={setActiveTab} onPricingClick={onPricingClick} />
+        <SidebarContent onPricingClick={onPricingClick} />
       </aside>
 
       {/* Mobile Menu Button (Floating or Integrated) */}
@@ -139,8 +141,6 @@ const DashboardSidebar = ({ activeTab, setActiveTab, onPricingClick }: SidebarPr
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-72 border-r-border">
             <SidebarContent 
-              activeTab={activeTab} 
-              setActiveTab={setActiveTab} 
               onPricingClick={onPricingClick} 
               onItemClick={() => setIsOpen(false)}
             />
