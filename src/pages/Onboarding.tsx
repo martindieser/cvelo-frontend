@@ -123,7 +123,7 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background font-body">
-      <Navbar />
+      <Navbar hideAuth={true} />
       <div className={`${isFinalStep ? "max-w-6xl" : "max-w-2xl"} mx-auto px-4 py-12 transition-all duration-500`}>
         {/* Progress bar */}
         <div className="flex justify-between mb-12 relative max-w-2xl mx-auto">

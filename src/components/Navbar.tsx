@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import logoMascot from "@/assets/logo-mascot.svg";
 import { useAuth } from "@/hooks/useAuth";
 
-const Navbar = () => {
+interface NavbarProps {
+  hideAuth?: boolean;
+}
+
+const Navbar = ({ hideAuth = false }: NavbarProps) => {
   const { isAuthenticated } = useAuth();
 
   return (
@@ -19,9 +23,11 @@ const Navbar = () => {
             Editor Gratuito
           </Link>
         )}
-        <CTAButton to={isAuthenticated ? "/dashboard" : "/login"} variant="outline" className="rounded-full px-6 border-border hover:bg-muted">
-          {isAuthenticated ? "Mi Dashboard" : "Iniciar sesión"}
-        </CTAButton>
+        {!hideAuth && (
+          <CTAButton to={isAuthenticated ? "/dashboard" : "/login"} variant="outline" className="rounded-full px-6 border-border hover:bg-muted">
+            {isAuthenticated ? "Mi Dashboard" : "Iniciar sesión"}
+          </CTAButton>
+        )}
       </div>
     </nav>
   );
