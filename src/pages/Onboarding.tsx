@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboardingProcess } from "@/hooks/useOnboardingProcess";
+import { useOnboardingState } from "@/hooks/useOnboardingState";
 
 // Sub-componentes refactorizados
 import StepUpload from "@/components/on-boarding/StepUpload";
@@ -14,7 +14,6 @@ import StepAuth from "@/components/on-boarding/StepAuth";
 import ResumeEnhancerFlow from "@/components/dashboard/ResumeEnhancerFlow";
 import Settings from "@/components/dashboard/Settings";
 import LoadingScreen from "@/components/LoadingScreen";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 const steps = [
@@ -25,18 +24,23 @@ const steps = [
 ];
 
 const Onboarding = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentStep = useMemo(() => {
-    const step = parseInt(searchParams.get("step") || "1", 10);
-    return isNaN(step) ? 1 : step;
-  }, [searchParams]);
+  const { isAuthenticated } = useAuth();
+  const {
+    currentStep,
+    fileId,
+    fileName,
+    jobDescription,
+    setJobDescription,
+    setOnboardingFile,
+    nextStep,
+    prevStep,
+    reset,
+    complete
+  } = useOnboardingState(isAuthenticated);
 
   const [file, setFile] = useState<File | null>(null);
-  const [fileId, setFileId] = useState<string | null>(() => localStorage.getItem("onboarding_file_id"));
-  const [jobDescription, setJobDescription] = useState("");
   const [isReviewingSettings, setIsReviewingSettings] = useState(false);
   
-  const { isAuthenticated } = useAuth();
   const { 
     status: apiStatus, 
     error: apiError, 
@@ -45,71 +49,35 @@ const Onboarding = () => {
     extractProfile,
     reset: resetApiState
   } = useOnboardingProcess();
-  const navigate = useNavigate();
+  
   const processStarted = useRef(false);
 
-  // Redirigir si ya está autenticado (Onboarding es solo para nuevos)
-  // Pero permitir quedarse si hay un proceso activo o estamos en el paso final
   useEffect(() => {
-    if (isAuthenticated && currentStep === 1 && !fileId && !jobDescription) {
-      navigate("/dashboard");
+    if (fileId && fileName && !file) {
+      setFile({ name: fileName } as File);
     }
-  }, [isAuthenticated, navigate, currentStep, fileId, jobDescription]);
+  }, [fileId, fileName, file]);
 
   const handleFileUpload = async (selectedFile: File) => {
     if (fileId) return;
     setFile(selectedFile);
     try {
       const id = await uploadFile(selectedFile);
-      setFileId(id);
-      localStorage.setItem("onboarding_file_id", id);
-      localStorage.setItem("onboarding_file_name", selectedFile.name);
-      
-      // Si ya tenemos descripción y estamos autenticados (venimos de un error en el paso 4)
-      // saltamos directamente de vuelta al paso 4 para procesar el nuevo archivo
-      if (jobDescription && isAuthenticated) {
-        setSearchParams({ step: "4" });
-      }
+      setOnboardingFile(id, selectedFile.name);
     } catch (err) {
-      console.error("Error al subir el archivo inicialmente:", err);
+      console.error("Error al subir el archivo:", err);
     }
   };
 
   const handleResetFile = () => {
     setFile(null);
-    setFileId(null);
-    localStorage.removeItem("onboarding_file_id");
-    localStorage.removeItem("onboarding_file_name");
+    reset();
     resetApiState();
     processStarted.current = false;
-    setSearchParams({ step: "1" });
   };
 
-  useEffect(() => {
-    const savedName = localStorage.getItem("onboarding_file_name");
-    if (fileId && savedName && !file) {
-      setFile({ name: savedName } as File);
-    }
-  }, [fileId, file]);
-
-  const nextStep = () => {
-    setSearchParams({ step: (currentStep + 1).toString() });
-  };
-
-  const prevStep = () => {
-    setSearchParams({ step: (currentStep - 1).toString() });
-  };
-
-  const handleRegisterSuccess = () => {
-    setSearchParams({ step: "4" });
-  };
-
-  const handleProcessCompletion = (result: any) => {
-    console.log("Onboarding completado con éxito:", result);
-    localStorage.removeItem("onboarding_file_id");
-    localStorage.removeItem("onboarding_file_name");
-    // La redirección no es inmediata para permitir al usuario ver el resultado 
-    // o el ResumeEnhancerFlow se encarga de mostrar el preview final.
+  const handleAuthSuccess = () => {
+    nextStep(); // Avanza al paso 4
   };
 
   const executeExtraction = async () => {
@@ -181,7 +149,7 @@ const Onboarding = () => {
               />
             )}
 
-            {currentStep === 3 && <StepAuth onSuccess={handleRegisterSuccess} />}
+            {currentStep === 3 && <StepAuth onSuccess={handleAuthSuccess} />}
 
             {currentStep === 4 && (
               <div className="min-h-[60vh] flex flex-col items-center justify-center">
@@ -217,7 +185,7 @@ const Onboarding = () => {
                     profile={extractedProfile}
                     initialJobDescription={jobDescription}
                     autoStart={true}
-                    onComplete={handleProcessCompletion}
+                    onComplete={complete}
                   />
                 ) : (
                   <LoadingScreen fullScreen={false} message="Preparando flujo de optimización..." />
@@ -252,3 +220,4 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+
