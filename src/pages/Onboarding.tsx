@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -25,7 +25,12 @@ const steps = [
 ];
 
 const Onboarding = () => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentStep = useMemo(() => {
+    const step = parseInt(searchParams.get("step") || "1", 10);
+    return isNaN(step) ? 1 : step;
+  }, [searchParams]);
+
   const [file, setFile] = useState<File | null>(null);
   const [fileId, setFileId] = useState<string | null>(() => localStorage.getItem("onboarding_file_id"));
   const [jobDescription, setJobDescription] = useState("");
@@ -63,7 +68,7 @@ const Onboarding = () => {
       // Si ya tenemos descripción y estamos autenticados (venimos de un error en el paso 4)
       // saltamos directamente de vuelta al paso 4 para procesar el nuevo archivo
       if (jobDescription && isAuthenticated) {
-        setCurrentStep(4);
+        setSearchParams({ step: "4" });
       }
     } catch (err) {
       console.error("Error al subir el archivo inicialmente:", err);
@@ -77,7 +82,7 @@ const Onboarding = () => {
     localStorage.removeItem("onboarding_file_name");
     resetApiState();
     processStarted.current = false;
-    setCurrentStep(1);
+    setSearchParams({ step: "1" });
   };
 
   useEffect(() => {
@@ -88,13 +93,15 @@ const Onboarding = () => {
   }, [fileId, file]);
 
   const nextStep = () => {
-    setCurrentStep((prev) => prev + 1);
+    setSearchParams({ step: (currentStep + 1).toString() });
   };
 
-  const prevStep = () => setCurrentStep((prev) => prev - 1);
+  const prevStep = () => {
+    setSearchParams({ step: (currentStep - 1).toString() });
+  };
 
   const handleRegisterSuccess = () => {
-    setCurrentStep(4);
+    setSearchParams({ step: "4" });
   };
 
   const handleProcessCompletion = (result: any) => {
