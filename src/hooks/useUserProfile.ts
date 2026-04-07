@@ -1,15 +1,21 @@
-import { useState, useEffect } from "react";
-import { UserProfileViewModel, AdaptedResumeViewModel } from "@/lib/viewmodels";
-import { UserProfileDTO, UpdateUserProfileRequestDTO, ExperienceItemDTO, EducationItemDTO, LanguageItemDTO, SocialLinkDTO } from "@/lib/dtos";
+import { useState, useEffect, useCallback } from "react";
+import { UserProfileViewModel } from "@/lib/viewmodels";
+import { UserProfileDTO, UpdateUserProfileRequestDTO } from "@/lib/dtos";
 import { useApi } from "./useApi";
+import { useAuth } from "./useAuth";
+import { ApiError } from "@/lib/apiClient";
 
 export function useUserProfile() {
   const { apiCall } = useApi();
+  const { isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<UserProfileViewModel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ApiError | null>(null);
 
-  const fetchProfile = async (silent = false) => {
+  const fetchProfile = useCallback(async (silent = false) => {
+    if (!isAuthenticated) return;
     if (!silent) setLoading(true);
+    setError(null);
     try {
       const data: UserProfileDTO = await apiCall("/users/me/profile");
       
@@ -75,15 +81,23 @@ export function useUserProfile() {
 
       setProfile(mappedProfile);
     } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err);
+      }
       console.error("Error fetching profile:", err);
     } finally {
       if (!silent) setLoading(false);
     }
-  };
+  }, [apiCall, isAuthenticated]);
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (isAuthenticated) {
+      fetchProfile();
+    } else {
+      setProfile(null);
+      setLoading(false);
+    }
+  }, [fetchProfile, isAuthenticated]);
 
   const updateProfile = async (newProfile: Partial<UserProfileViewModel>) => {
     // Optimistic update
@@ -152,5 +166,12 @@ export function useUserProfile() {
     }
   };
 
-  return { profile, updateProfile, loading, refreshProfile: fetchProfile };
+  return { 
+    profile, 
+    updateProfile, 
+    loading, 
+    error,
+    isNewUser: error?.status === 404,
+    refreshProfile: fetchProfile 
+  };
 }

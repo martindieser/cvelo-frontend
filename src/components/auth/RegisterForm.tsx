@@ -9,23 +9,18 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 
 interface RegisterFormProps {
   onToggle: () => void;
-  onSuccess: (email: string) => void;
+  onRegistered: (email: string, password?: string) => void;
   hideToggle?: boolean;
 }
 
-const RegisterForm = ({ onToggle, onSuccess, hideToggle = false }: RegisterFormProps) => {
+const RegisterForm = ({ onToggle, onRegistered, hideToggle = false }: RegisterFormProps) => {
   // Estados para Registro
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
-  // Estados para OTP
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
-
-  const { register, verifyOtp, login, loading } = useAuth();
+  const { register, loading } = useAuth();
 
   // Validación de política de contraseñas
   const passwordRequirements = useMemo(() => [
@@ -46,7 +41,8 @@ const RegisterForm = ({ onToggle, onSuccess, hideToggle = false }: RegisterFormP
 
     try {
       await register({ name: "Nuevo Usuario", email, password });
-      setShowOtp(true);
+      // Avisamos al orquestador que el registro fue exitoso
+      onRegistered(email, password);
     } catch (error: any) {
       console.error("Error en registro:", error);
       const status = error?.status || error?.response?.status;
@@ -57,92 +53,6 @@ const RegisterForm = ({ onToggle, onSuccess, hideToggle = false }: RegisterFormP
       }
     }
   };
-
-  // Acción 2: Verificación de OTP + Login Automático
-  const handleVerifyOtp = async () => {
-    if (otpCode.length < 6) return;
-    setVerifyingOtp(true);
-    setErrorMsg(null);
-    try {
-      // 1. Verificamos el código
-      await verifyOtp(email, otpCode);
-      
-      // 2. Login automático en segundo plano usando las credenciales guardadas
-      console.log("OTP verificado, iniciando sesión automática...");
-      await login({ email, password });
-      
-      // 3. ÉXITO FINAL: Avanzamos el Onboarding
-      onSuccess(email);
-    } catch (err: any) {
-      console.error("Error en verificación/login:", err);
-      setErrorMsg("El código es incorrecto o hubo un error al iniciar sesión.");
-    } finally {
-      setVerifyingOtp(false);
-    }
-  };
-
-  // Vista de Verificación OTP
-  if (showOtp) {
-    return (
-      <div className="text-center py-4 space-y-8 animate-in fade-in slide-in-from-right-4">
-        <div className="bg-primary/10 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto text-primary shadow-inner">
-          <KeyRound className="w-10 h-10" />
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-2xl font-black">Verifica tu código</h3>
-          <p className="text-sm text-muted-foreground">
-            Ingresa el código enviado a <br/>
-            <span className="font-bold text-foreground">{email}</span>
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center gap-6">
-          <InputOTP
-            maxLength={6}
-            value={otpCode}
-            onChange={(value) => setOtpCode(value)}
-            onComplete={handleVerifyOtp}
-          >
-            <InputOTPGroup className="gap-2">
-              {[0, 1, 2, 3, 4, 5].map((i) => (
-                <InputOTPSlot key={i} index={i} className="w-10 h-12 text-xl font-bold rounded-xl border-2" />
-              ))}
-            </InputOTPGroup>
-          </InputOTP>
-
-          {errorMsg && (
-            <Alert variant="destructive" className="bg-destructive/10 text-destructive border-destructive/20 rounded-xl py-2">
-              <AlertDescription className="font-medium text-[11px] text-center">
-                {errorMsg}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <Button 
-            onClick={handleVerifyOtp} 
-            disabled={otpCode.length < 6 || verifyingOtp}
-            className="w-full rounded-xl font-black h-12 shadow-lg"
-          >
-            {verifyingOtp ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Validando...
-              </>
-            ) : (
-              "Confirmar y continuar"
-            )}
-          </Button>
-          
-          <button 
-            onClick={() => setShowOtp(false)}
-            className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
-          >
-            ← Volver al registro
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Vista de Registro Inicial (Email/Password)
   return (

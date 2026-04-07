@@ -26,9 +26,8 @@ const LoginForm = ({ onToggle, onSuccess }: LoginFormProps) => {
       await login({ email, password });
       if (onSuccess) {
         onSuccess();
-      } else {
-        navigate("/dashboard");
       }
+      // No navigation here. The ProtectedRoute or the parent component will handle it.
     } catch (error) {
       console.error("Login failed:", error);
       setErrorMsg("Correo electrónico o contraseña incorrectos. Por favor, inténtalo de nuevo.");

@@ -3,11 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import logoMascot from "@/assets/logo-mascot.svg";
 import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useOnboardingState } from "@/hooks/useOnboardingState";
 
 const Login = () => {
   const { isAuthenticated } = useAuth();
+  const { profile, loading: profileLoading, isNewUser } = useUserProfile();
+  const { hasResumeData } = useOnboardingState();
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !profileLoading) {
+    if (isNewUser) {
+      if (hasResumeData) return <Navigate to="/onboarding?step=4" replace />;
+      return <Navigate to="/onboarding?step=1" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 

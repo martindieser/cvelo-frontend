@@ -16,21 +16,38 @@ import MyDocuments from "@/components/dashboard/MyDocuments";
 import Settings from "@/components/dashboard/Settings";
 import TailorSection from "@/components/dashboard/TailorSection";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useOnboardingState } from "@/hooks/useOnboardingState";
 import LoadingScreen from "@/components/LoadingScreen";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading, isNewUser } = useUserProfile();
+  const { hasResumeData } = useOnboardingState();
 
-  if (loading) {
-    return <LoadingScreen />;
+  if (authLoading || (isAuthenticated && profileLoading)) {
+    return <LoadingScreen message="Verificando sesión..." />;
   }
 
+  // 1. Si NO está autenticado -> Al Home (/)
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
+  // 2. Si está autenticado pero NO tiene perfil maestro procesado (404 confirmado)
+  if (isNewUser) {
+    // Si tiene datos locales para reanudar -> Al paso 4 del onboarding
+    if (hasResumeData) {
+      return <Navigate to="/onboarding?step=4" replace />;
+    }
+    // Si no tiene nada -> Al paso 1 del onboarding
+    return <Navigate to="/onboarding?step=1" replace />;
+  }
+
+  // 3. Si todo está OK (hay perfil o hay error que no es 404) -> Renderizar Dashboard
+  // Nota: Si hay un error que NO es 404, dejamos que el dashboard maneje su propio estado de error
   return <>{children}</>;
 };
 
