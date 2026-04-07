@@ -8,6 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isEmailUnconfirmed: boolean;
   unconfirmedEmail: string | null;
+  unconfirmedPassword: string | null; // Nueva propiedad temporal
   loading: boolean;
   login: (data: LoginRequestDTO) => Promise<void>;
   register: (data: RegisterRequestDTO) => Promise<void>;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUserViewModel | null>(null);
   const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [unconfirmedPassword, setUnconfirmedPassword] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -41,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (data: LoginRequestDTO) => {
     setLoading(true);
     setUnconfirmedEmail(null);
+    setUnconfirmedPassword(null);
     try {
       const response: LoginResponseDTO = await apiFetch("/auth/login", {
         method: "POST",
@@ -60,9 +63,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       // Si el servidor retorna 403, la cuenta no está confirmada
       if (err.status === 403) {
+        console.log(`Login 403: Saving in storage - Email: ${data.email}`);
         setUnconfirmedEmail(data.email);
-        // También lo guardamos en localStorage para que el hook de onboarding lo vea
+        setUnconfirmedPassword(data.password); 
+        
+        // Persistimos ambos para que el Onboarding los vea sin fallas
         localStorage.setItem("onboarding_pending_email", data.email);
+        localStorage.setItem("onboarding_pending_password", data.password);
       }
       throw err;
     } finally {
@@ -72,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearUnconfirmedStatus = () => {
     setUnconfirmedEmail(null);
+    setUnconfirmedPassword(null);
   };
 
 
@@ -128,6 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       localStorage.removeItem("user");
       localStorage.removeItem("token");
+      localStorage.removeItem("onboarding_completed"); // Limpiar tag de onboarding
       setLoading(false);
     }
   };
@@ -139,6 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAuthenticated: !!user, 
       isEmailUnconfirmed: !!unconfirmedEmail,
       unconfirmedEmail,
+      unconfirmedPassword,
       loading, 
       login, 
       register, 
