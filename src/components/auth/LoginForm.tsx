@@ -27,9 +27,13 @@ const LoginForm = ({ onToggle, onSuccess }: LoginFormProps) => {
       if (onSuccess) {
         onSuccess();
       }
-      // No navigation here. The ProtectedRoute or the parent component will handle it.
-    } catch (error) {
+      // No navigation here. The Traffic Controller (Login page or ProtectedRoute) will handle it.
+    } catch (error: any) {
       console.error("Login failed:", error);
+      if (error.status === 403) {
+        // Redirection will be handled by the Traffic Controller in the Login page
+        return;
+      }
       setErrorMsg("Correo electrónico o contraseña incorrectos. Por favor, inténtalo de nuevo.");
     }
   };

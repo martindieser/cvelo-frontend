@@ -1,4 +1,5 @@
-import { Link, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import logoMascot from "@/assets/logo-mascot.svg";
 import LoginForm from "@/components/auth/LoginForm";
@@ -7,9 +8,22 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 
 const Login = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isEmailUnconfirmed, clearUnconfirmedStatus } = useAuth();
   const { profile, loading: profileLoading, isNewUser } = useUserProfile();
-  const { hasResumeData } = useOnboardingState();
+  const { hasResumeData } = useOnboardingState(isAuthenticated);
+  const navigate = useNavigate();
+
+  // Manejar la redirección por email no confirmado como un efecto secundario
+  // Esto evita el error "Cannot update a component while rendering a different component"
+  useEffect(() => {
+    if (isEmailUnconfirmed) {
+      console.log("Email unconfirmed, redirecting to onboarding step 3...");
+      // Primero navegamos
+      navigate("/onboarding?step=3", { replace: true });
+      // Luego limpiamos el estado para evitar bucles
+      clearUnconfirmedStatus();
+    }
+  }, [isEmailUnconfirmed, navigate, clearUnconfirmedStatus]);
 
   if (isAuthenticated && !profileLoading) {
     if (isNewUser) {

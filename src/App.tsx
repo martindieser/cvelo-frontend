@@ -23,20 +23,25 @@ import LoadingScreen from "@/components/LoadingScreen";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, isEmailUnconfirmed, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading, isNewUser } = useUserProfile();
-  const { hasResumeData } = useOnboardingState();
+  const { hasResumeData } = useOnboardingState(isAuthenticated);
 
   if (authLoading || (isAuthenticated && profileLoading)) {
     return <LoadingScreen message="Verificando sesión..." />;
   }
 
-  // 1. Si NO está autenticado -> Al Home (/)
+  // 1. Si el email no está confirmado -> Al Onboarding (Paso 3: Auth/OTP)
+  if (isEmailUnconfirmed) {
+    return <Navigate to="/onboarding?step=3" replace />;
+  }
+
+  // 2. Si NO está autenticado -> Al Home (/)
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  // 2. Si está autenticado pero NO tiene perfil maestro procesado (404 confirmado)
+  // 3. Si está autenticado pero NO tiene perfil maestro procesado (404 confirmado)
   if (isNewUser) {
     // Si tiene datos locales para reanudar -> Al paso 4 del onboarding
     if (hasResumeData) {

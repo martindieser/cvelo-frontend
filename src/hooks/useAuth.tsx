@@ -6,11 +6,14 @@ import { apiFetch } from "@/lib/apiClient";
 interface AuthContextType {
   user: AuthUserViewModel | null;
   isAuthenticated: boolean;
+  isEmailUnconfirmed: boolean;
+  unconfirmedEmail: string | null;
   loading: boolean;
   login: (data: LoginRequestDTO) => Promise<void>;
   register: (data: RegisterRequestDTO) => Promise<void>;
   verifyOtp: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
+  clearUnconfirmedStatus: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUserViewModel | null>(null);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -36,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (data: LoginRequestDTO) => {
     setLoading(true);
+    setUnconfirmedEmail(null);
     try {
       const response: LoginResponseDTO = await apiFetch("/auth/login", {
         method: "POST",
@@ -52,9 +57,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(userVm);
       localStorage.setItem("user", JSON.stringify(userVm));
       localStorage.setItem("token", token);
+    } catch (err: any) {
+      // Si el servidor retorna 403, la cuenta no está confirmada
+      if (err.status === 403) {
+        setUnconfirmedEmail(data.email);
+        // También lo guardamos en localStorage para que el hook de onboarding lo vea
+        localStorage.setItem("onboarding_pending_email", data.email);
+      }
+      throw err;
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearUnconfirmedStatus = () => {
+    setUnconfirmedEmail(null);
   };
 
 
@@ -120,11 +137,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider value={{ 
       user, 
       isAuthenticated: !!user, 
+      isEmailUnconfirmed: !!unconfirmedEmail,
+      unconfirmedEmail,
       loading, 
       login, 
       register, 
       verifyOtp,
-      logout
+      logout,
+      clearUnconfirmedStatus
     }}>
       {children}
     </AuthContext.Provider>
