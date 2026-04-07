@@ -10,16 +10,20 @@ interface StepAuthProps {
 }
 
 const StepAuth = ({ onSuccess }: StepAuthProps) => {
-  const { isAuthenticated } = useAuth();
+  const { 
+    isAuthenticated, 
+    unconfirmedPassword, 
+    clearUnconfirmedStatus, 
+    login 
+  } = useAuth();
+  
   const { 
     pendingEmail, 
     setOnboardingPendingEmail 
   } = useOnboardingState(isAuthenticated);
 
-  const [password, setPassword] = useState(""); // Solo para login automático inmediato
+  const [password, setPassword] = useState(""); // Memoria para registro reciente
   const [view, setView] = useState<"register" | "verify">(pendingEmail ? "verify" : "register");
-  
-  const { login } = useAuth();
 
   const handleRegistered = (registeredEmail: string, registeredPassword?: string) => {
     if (registeredPassword) setPassword(registeredPassword);
@@ -28,30 +32,39 @@ const StepAuth = ({ onSuccess }: StepAuthProps) => {
   };
 
   const handleVerifySuccess = async () => {
-    // Si tenemos el password (recién registrado), hacemos login automático
-    if (password && pendingEmail) {
+    // CAPTURAMOS LOS DATOS INMEDIATAMENTE
+    const emailToUse = pendingEmail || localStorage.getItem("onboarding_pending_email");
+    const passwordToUse = password || unconfirmedPassword || localStorage.getItem("onboarding_pending_password");
+    
+    console.log(`OTP Success. Attempting auto-login. Email: ${!!emailToUse}, Password: ${!!passwordToUse}`);
+    
+    if (passwordToUse && emailToUse) {
       try {
         console.log("Realizando login automático tras OTP...");
-        await login({ email: pendingEmail, password });
-        cleanup();
+        await login({ email: emailToUse, password: passwordToUse });
+        
+        // LIMPIEZA SOLO DESPUÉS DEL ÉXITO
+        setOnboardingPendingEmail(null);
+        localStorage.removeItem("onboarding_pending_password");
+        clearUnconfirmedStatus();
+        
         onSuccess();
       } catch (err) {
         console.error("Auto-login failed after OTP:", err);
-        cleanup();
+        // Si falla el login, igual llamamos a onSuccess para que el Traffic Controller 
+        // decida qué hacer (probablemente pedir login manual)
         onSuccess();
       }
     } else {
-      cleanup();
+      console.warn("Auto-login skipped: Missing credentials.");
       onSuccess();
     }
   };
 
-  const cleanup = () => {
-    setOnboardingPendingEmail(null);
-  };
-
   const handleBack = () => {
-    cleanup();
+    setOnboardingPendingEmail(null);
+    localStorage.removeItem("onboarding_pending_password");
+    clearUnconfirmedStatus();
     setPassword("");
     setView("register");
   };
