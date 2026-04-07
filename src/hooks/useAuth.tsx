@@ -14,6 +14,7 @@ interface AuthContextType {
   register: (data: RegisterRequestDTO) => Promise<void>;
   verifyOtp: (email: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
+  clearSession: () => void;
   clearUnconfirmedStatus: () => void;
 }
 
@@ -38,6 +39,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       setLoading(false);
     }, []);
+
+  const clearSession = () => {
+    setUser(null);
+    setUnconfirmedEmail(null);
+    setUnconfirmedPassword(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("onboarding_completed");
+    localStorage.removeItem("onboarding_pending_email");
+    localStorage.removeItem("onboarding_pending_password");
+  };
 
 
   const login = async (data: LoginRequestDTO) => {
@@ -133,10 +145,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // no importa si falla
     } finally {
-      setUser(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      localStorage.removeItem("onboarding_completed"); // Limpiar tag de onboarding
+      clearSession();
       setLoading(false);
     }
   };
@@ -154,6 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       register, 
       verifyOtp,
       logout,
+      clearSession,
       clearUnconfirmedStatus
     }}>
       {children}
