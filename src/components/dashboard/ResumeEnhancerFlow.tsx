@@ -7,6 +7,7 @@ import TailorCV from "@/components/dashboard/TailorCV";
 import LoadingScreen from "@/components/LoadingScreen";
 import ValidationIntermediary from "@/components/on-boarding/ValidationIntermediary";
 import { useTailoredResume } from "@/hooks/useTailoredResume";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { UserProfileViewModel, TailoredResumeViewModel } from "@/lib/viewmodels";
 
 interface ResumeEnhancerFlowProps {
@@ -28,6 +29,8 @@ const ResumeEnhancerFlow = ({
   const [isStarted, setIsStarted] = useState(autoStart && !!initialJobDescription);
   const [jobDescription, setJobDescription] = useState(initialJobDescription);
   const [hasAutoStarted, setHasAutoStarted] = useState(false);
+
+  const { refreshProfile } = useUserProfile();
 
   const { 
     tailoredResume, 
@@ -54,10 +57,16 @@ const ResumeEnhancerFlow = ({
   useEffect(() => {
     if (tailoredResume) {
       if (onComplete) onComplete(tailoredResume);
+      
+      // Actualizar créditos en background tras finalizar exitosamente
+      setTimeout(() => {
+        refreshProfile();
+      }, 1000);
+
       // Siempre navegamos al terminar con éxito
       navigate(`/dashboard/tailor/${tailoredResume.id}`, { replace: true });
     }
-  }, [tailoredResume, onComplete, navigate]);
+  }, [tailoredResume, onComplete, navigate, refreshProfile]);
 
   const handleAdaptCV = async (description: string) => {
     setIsStarted(true);
