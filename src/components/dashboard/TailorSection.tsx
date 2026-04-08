@@ -14,6 +14,7 @@ interface DashboardContext {
   isViewingSpecificDoc: boolean;
   activeHighlight: string | null;
   setActiveHighlight: (id: string | null) => void;
+  refreshResumes: () => void;
 }
 
 const TailorSection = () => {
@@ -25,7 +26,8 @@ const TailorSection = () => {
     tailoringLoading, 
     isViewingSpecificDoc, 
     activeHighlight, 
-    setActiveHighlight 
+    setActiveHighlight,
+    refreshResumes
   } = useOutletContext<DashboardContext>();
 
   if (currentTailoredResume) {
@@ -59,7 +61,10 @@ const TailorSection = () => {
     return (
       <ResumeEnhancerFlow 
         profile={profile} 
-        onComplete={(resume) => setCurrentTailoredResume(resume)}
+        onComplete={(resume) => {
+          setCurrentTailoredResume(resume);
+          refreshResumes();
+        }}
       />
     );
   }

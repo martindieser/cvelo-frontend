@@ -54,6 +54,13 @@ const Dashboard = () => {
   const { status: paymentStatus } = usePayment();
   const { fetchTailoredResume, clearTailoredResume, loading: tailoringLoading } = useTailoredResume();
   
+  // Escuchar evento global para abrir el modal de precios
+  useEffect(() => {
+    const handleOpenPricing = () => setIsPricingOpen(true);
+    window.addEventListener("open-pricing-modal", handleOpenPricing);
+    return () => window.removeEventListener("open-pricing-modal", handleOpenPricing);
+  }, []);
+
   // Cargar documento si hay un resumeId en la URL
   useEffect(() => {
     const loadResume = async () => {
