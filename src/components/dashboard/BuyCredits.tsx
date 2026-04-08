@@ -23,8 +23,16 @@ interface BuyCreditsProps {
 
 const BuyCredits = ({ onClose }: BuyCreditsProps) => {
   const [amount, setAmount] = useState(1);
-  const { status, checkoutInfo, createPayment, cancelPayment, resetPayment } = usePayment();
-  const { updateProfile } = useUserProfile();
+  const { refreshProfile } = useUserProfile();
+
+  const handlePaymentSuccess = () => {
+    // Esperar un segundo para asegurar que el backend procesó el pago antes de pedir el perfil
+    setTimeout(() => {
+      refreshProfile();
+    }, 1000);
+  };
+
+  const { status, checkoutInfo, createPayment, cancelPayment, resetPayment } = usePayment(handlePaymentSuccess);
   const { config, loading: configLoading } = useConfig();
   
   const pricePerCredit = config?.pricePerCredit || 3000;

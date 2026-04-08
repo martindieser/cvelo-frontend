@@ -5,21 +5,53 @@ import { useApi } from "./useApi";
 import { useAuth } from "./useAuth";
 import { ApiError } from "@/lib/apiClient";
 
+// Estado compartido fuera del hook para sincronizar todas las instancias
+let sharedProfile: UserProfileViewModel | null = null;
+let sharedLoading = true;
+let sharedRefreshing = false;
+let sharedError: ApiError | null = null;
+const listeners = new Set<() => void>();
+
+const notifyListeners = () => listeners.forEach(listener => listener());
+
 export function useUserProfile() {
   const { apiCall } = useApi();
   const { isAuthenticated } = useAuth();
-  const [profile, setProfile] = useState<UserProfileViewModel | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ApiError | null>(null);
+  
+  // Estado local para disparar re-renders, pero sincronizado con el global
+  const [profile, setProfile] = useState<UserProfileViewModel | null>(sharedProfile);
+  const [loading, setLoading] = useState(sharedLoading);
+  const [isRefreshing, setIsRefreshing] = useState(sharedRefreshing);
+  const [error, setError] = useState<ApiError | null>(sharedError);
+
+  useEffect(() => {
+    const handleChange = () => {
+      setProfile(sharedProfile);
+      setLoading(sharedLoading);
+      setIsRefreshing(sharedRefreshing);
+      setError(sharedError);
+    };
+    listeners.add(handleChange);
+    return () => {
+      listeners.delete(handleChange);
+    };
+  }, []);
 
   const fetchProfile = useCallback(async (silent = false) => {
     if (!isAuthenticated) return;
-    if (!silent) setLoading(true);
-    setError(null);
+    
+    if (silent) {
+      sharedRefreshing = true;
+    } else {
+      sharedLoading = true;
+    }
+    notifyListeners();
+    
+    sharedError = null;
     try {
       const data: UserProfileDTO = await apiCall("/users/me/profile");
       
-      const mappedProfile: UserProfileViewModel = {
+      sharedProfile = {
         name: data.name ?? "",
         email: data.email,
         credits: data.credits,
@@ -78,31 +110,35 @@ export function useUserProfile() {
           })
         }
       };
-
-      setProfile(mappedProfile);
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err);
+        sharedError = err;
       }
       console.error("Error fetching profile:", err);
     } finally {
-      if (!silent) setLoading(false);
+      sharedLoading = false;
+      sharedRefreshing = false;
+      notifyListeners();
     }
   }, [apiCall, isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchProfile();
+      if (!sharedProfile && !sharedLoading) {
+        fetchProfile();
+      }
     } else {
-      setProfile(null);
-      setLoading(false);
+      sharedProfile = null;
+      sharedLoading = false;
+      sharedRefreshing = false;
+      notifyListeners();
     }
   }, [fetchProfile, isAuthenticated]);
 
   const updateProfile = async (newProfile: Partial<UserProfileViewModel>) => {
-    // Optimistic update
-    const previousProfile = profile;
-    setProfile(prev => prev ? { ...prev, ...newProfile } : null);
+    const previousProfile = sharedProfile;
+    sharedProfile = sharedProfile ? { ...sharedProfile, ...newProfile } : null;
+    notifyListeners();
 
     try {
       const updateReq: UpdateUserProfileRequestDTO = {};
@@ -157,12 +193,11 @@ export function useUserProfile() {
         body: JSON.stringify(updateReq),
       });
       
-      // Refresh silently to ensure we have the latest from server (e.g. server-side IDs)
       await fetchProfile(true);
     } catch (err) {
       console.error("Error updating profile:", err);
-      // Rollback
-      setProfile(previousProfile);
+      sharedProfile = previousProfile;
+      notifyListeners();
     }
   };
 
@@ -170,8 +205,9 @@ export function useUserProfile() {
     profile, 
     updateProfile, 
     loading, 
+    isRefreshing,
     error,
     isNewUser: error?.status === 404,
-    refreshProfile: fetchProfile 
+    refreshProfile: () => fetchProfile(true) 
   };
 }

@@ -4,11 +4,17 @@ import { useApi } from "./useApi";
 
 export type PaymentHookStatus = "idle" | "creating" | "awaiting_payment" | "success" | "error" | "expired";
 
-export function usePayment() {
+export function usePayment(onSuccess?: () => void) {
   const { apiCall } = useApi();
   const [status, setStatus] = useState<PaymentHookStatus>("idle");
   const [checkoutInfo, setCheckoutResponse] = useState<CheckoutResponseDTO | null>(null);
   const pollingInterval = useRef<NodeJS.Timeout | null>(null);
+  const onSuccessRef = useRef(onSuccess);
+
+  // Mantener la ref actualizada con la última función pasada
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
 
   const fetchPending = async () => {
     try {
@@ -57,8 +63,23 @@ export function usePayment() {
         const data: PaymentStatusDTO = await apiCall(`/payments/${paymentId}/status`);
         
         if (data.status === "approved") {
+          console.log("Payment approved! Triggering success flow...");
           stopPolling();
+          
+          // Actualizar tokens/sesión si el backend los envía post-pago
+          const responseData = data as any;
+          if (responseData.token) {
+            localStorage.setItem("token", responseData.token);
+          }
+          if (responseData.user) {
+            localStorage.setItem("user", JSON.stringify(responseData.user));
+          }
+
           setStatus("success");
+          if (onSuccessRef.current) {
+            console.log("Calling onSuccess callback...");
+            onSuccessRef.current();
+          }
         } else if (data.status === "expired" || data.status === "rejected" || data.status === "cancelled") {
           stopPolling();
           setStatus(data.status === "expired" ? "expired" : "error");
