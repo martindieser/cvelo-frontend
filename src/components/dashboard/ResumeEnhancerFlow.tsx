@@ -49,9 +49,13 @@ const ResumeEnhancerFlow = ({
   useEffect(() => {
     if (autoStart && initialJobDescription && !hasAutoStarted) {
       setHasAutoStarted(true);
-      handleAdaptCV(initialJobDescription);
+      if (profile.credits < 1) {
+        window.dispatchEvent(new CustomEvent("open-pricing-modal"));
+      } else {
+        handleAdaptCV(initialJobDescription);
+      }
     }
-  }, [autoStart, initialJobDescription, hasAutoStarted]);
+  }, [autoStart, initialJobDescription, hasAutoStarted, profile.credits]);
 
   // Redirigir y notificar al padre cuando el CV esté listo
   useEffect(() => {
@@ -69,6 +73,11 @@ const ResumeEnhancerFlow = ({
   }, [tailoredResume, onComplete, navigate, refreshProfile]);
 
   const handleAdaptCV = async (description: string) => {
+    if (profile.credits < 1) {
+      window.dispatchEvent(new CustomEvent("open-pricing-modal"));
+      return;
+    }
+    
     setIsStarted(true);
     try {
       await generateResume(description);
