@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useOnboardingProcess } from "@/hooks/useOnboardingProcess";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 
@@ -25,6 +27,7 @@ const steps = [
 
 const Onboarding = () => {
   const { isAuthenticated } = useAuth();
+  const { isNewUser, loading: profileLoading } = useUserProfile();
   const {
     currentStep,
     fileId,
@@ -37,6 +40,16 @@ const Onboarding = () => {
     reset,
     complete
   } = useOnboardingState(isAuthenticated);
+
+  const navigate = useNavigate();
+
+  // Traffic Control: Si el usuario ya completó el onboarding según el tag, al dashboard
+  useEffect(() => {
+    if (localStorage.getItem("onboarding_completed") === "true") {
+      console.log("Onboarding already completed (tag found), redirecting...");
+      navigate("/dashboard");
+    }
+  }, [navigate]);
 
   const [file, setFile] = useState<File | null>(null);
   const [isReviewingSettings, setIsReviewingSettings] = useState(false);
@@ -78,6 +91,12 @@ const Onboarding = () => {
 
   const handleAuthSuccess = () => {
     nextStep(); // Avanza al paso 4
+  };
+
+  const handleProcessCompletion = (result: any) => {
+    console.log("Onboarding completado con éxito:", result);
+    localStorage.setItem("onboarding_completed", "true");
+    complete();
   };
 
   const executeExtraction = async () => {
@@ -185,7 +204,7 @@ const Onboarding = () => {
                     profile={extractedProfile}
                     initialJobDescription={jobDescription}
                     autoStart={true}
-                    onComplete={complete}
+                    onComplete={handleProcessCompletion}
                   />
                 ) : (
                   <LoadingScreen fullScreen={false} message="Preparando flujo de optimización..." />
@@ -220,4 +239,3 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
-

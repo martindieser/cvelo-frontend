@@ -22,7 +22,12 @@ export function useOnboardingState(isAuthenticated: boolean) {
   const suggestedStep = useMemo(() => {
     if (!fileId) return 1;
     if (!jobDescription) return 2;
-    if (!isAuthenticated) return 3;
+    
+    // Si no está autenticado Y no hay token físico en el storage, paso 3.
+    // Si hay token, asumimos que puede intentar el paso 4 (el Traffic Controller o la API fallarán si el token es inválido).
+    const hasToken = !!localStorage.getItem("token");
+    if (!isAuthenticated && !hasToken) return 3;
+    
     return 4;
   }, [fileId, jobDescription, isAuthenticated]);
 

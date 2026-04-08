@@ -18,9 +18,9 @@ const Login = () => {
   useEffect(() => {
     if (isEmailUnconfirmed) {
       console.log("Email unconfirmed, redirecting to onboarding step 3...");
-      // Primero navegamos
       navigate("/onboarding?step=3", { replace: true });
-      // Luego limpiamos el estado para evitar bucles
+      // Limpiamos el estado del AuthContext para que no se buclee, 
+      // pero el localStorage (email/password) permanece para que el StepAuth lo use.
       clearUnconfirmedStatus();
     }
   }, [isEmailUnconfirmed, navigate, clearUnconfirmedStatus]);
@@ -30,6 +30,9 @@ const Login = () => {
       if (hasResumeData) return <Navigate to="/onboarding?step=4" replace />;
       return <Navigate to="/onboarding?step=1" replace />;
     }
+    // Si llegamos aquí, el usuario ya tiene perfil. 
+    // Marcamos el tag por si no existía (ej. entró desde otra PC) para el Traffic Controller del Onboarding.
+    localStorage.setItem("onboarding_completed", "true");
     return <Navigate to="/dashboard" replace />;
   }
 

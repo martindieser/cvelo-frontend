@@ -11,24 +11,29 @@ interface VerifyOTPFormProps {
   onBack: () => void;
 }
 
-const VerifyOTPForm = ({ email, onSuccess, onBack }: VerifyOTPFormProps) => {
+const VerifyOTPForm = ({ email: propEmail, onSuccess, onBack }: VerifyOTPFormProps) => {
   const [otpCode, setOtpCode] = useState("");
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const { verifyOtp, login } = useAuth();
+  const { verifyOtp } = useAuth();
+
+  // Asegurar que tenemos el email, ya sea por prop o por localStorage
+  const email = propEmail || localStorage.getItem("onboarding_pending_email") || "";
 
   const handleVerifyOtp = async () => {
     if (otpCode.length < 6) return;
+    if (!email) {
+      setErrorMsg("No se encontró el correo electrónico para verificar.");
+      return;
+    }
+    
     setVerifyingOtp(true);
     setErrorMsg(null);
     try {
       // 1. Verificamos el código
       await verifyOtp(email, otpCode);
       
-      // 2. ÉXITO: El login automático se manejará aquí o arriba
-      // Pero como necesitamos el password para el login automático y aquí no lo tenemos
-      // (a menos que lo pasemos), simplemente avisamos que el OTP es válido.
-      // Si el login automático requiere password, StepAuth deberá orquestarlo.
+      // 2. ÉXITO: El login automático se manejará en StepAuth
       onSuccess();
     } catch (err: any) {
       console.error("Error en verificación:", err);
@@ -56,7 +61,6 @@ const VerifyOTPForm = ({ email, onSuccess, onBack }: VerifyOTPFormProps) => {
           maxLength={6}
           value={otpCode}
           onChange={(value) => setOtpCode(value)}
-          onComplete={handleVerifyOtp}
         >
           <InputOTPGroup className="gap-2">
             {[0, 1, 2, 3, 4, 5].map((i) => (
