@@ -87,9 +87,9 @@ export const SidebarContent = ({ onPricingClick, onItemClick }: SidebarProps) =>
           Mis Documentos
         </NavLink>
 
-        <div className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+{/*        <div className="px-4 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         Sistema
-        </div>
+        </div>*/}
         <NavLink 
           to="/dashboard/settings"
           onClick={onItemClick}

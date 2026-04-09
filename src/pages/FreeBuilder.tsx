@@ -19,6 +19,7 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { useGuestProfile } from "@/hooks/useGuestProfile";
 import { useConfig } from "@/hooks/useConfig";
 import { useApi } from "@/hooks/useApi";
+import { TaskResponseDTO, TaskStatusDTO } from "@/lib/dtos";
 
 // Componentes del editor refactorizados
 import GeneralSection from "@/components/cv-editor/GeneralSection";
@@ -58,6 +59,27 @@ const FreeBuilder = () => {
       updateSettings({ sectionsOrder: config.defaultSections });
     }
   }, [config.defaultSections, profile.settings.sectionsOrder.length]);
+
+  const pollTask = async (taskId: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        try {
+          const task: TaskStatusDTO = await apiCall(`/resumes/guest-tasks/${taskId}`);
+          
+          if (task.status === "COMPLETED") {
+            clearInterval(interval);
+            resolve(task.result);
+          } else if (task.status === "FAILED") {
+            clearInterval(interval);
+            reject(new Error(task.error || "La generación del PDF falló."));
+          }
+        } catch (err) {
+          clearInterval(interval);
+          reject(err);
+        }
+      }, 2000);
+    });
+  };
 
   const handlePreview = async () => {
     setIsGenerating(true);
@@ -100,19 +122,24 @@ const FreeBuilder = () => {
         }
       };
 
-      const response = await apiCall("/resumes/render-guest", {
+      const response: TaskResponseDTO = await apiCall("/resumes/render-guest", {
         method: "POST",
         body: JSON.stringify(renderReq),
       });
 
-      if (response && response.pdf_url) {
-        setPdfUrl(response.pdf_url);
+      if (response && response.task_id) {
+        const result = await pollTask(response.task_id);
+        if (result && result.pdf_url) {
+          setPdfUrl(result.pdf_url);
+        } else {
+          throw new Error("No se pudo obtener la URL del PDF.");
+        }
       } else {
-        throw new Error("No se pudo obtener la URL del PDF.");
+        throw new Error("No se pudo iniciar la generación del PDF.");
       }
     } catch (err: any) {
       console.error("Error al generar vista previa:", err);
-      setError("Error al generar el PDF. Revisa tus datos.");
+      setError(err.message || "Error al generar el PDF. Revisa tus datos.");
     } finally {
       setIsGenerating(false);
     }
@@ -176,7 +203,26 @@ const FreeBuilder = () => {
                 templates={config.templates} 
                 selectedId={profile.settings.template} 
                 onSelect={(id) => {
-                  updateSettings({ template: id as any });
+                  const newTemplateId = id as string;
+                  const selectedTemplateConfig = config.templates.find(t => t.id === newTemplateId);
+                  
+                  if (selectedTemplateConfig && selectedTemplateConfig.supportedSections) {
+                    const prevSections = profile.settings.sectionsOrder;
+                    const supportedPrevSections = prevSections.filter(s => 
+                      selectedTemplateConfig.supportedSections.includes(s.id)
+                    );
+                    const existingIds = new Set(supportedPrevSections.map(s => s.id));
+                    const missingIds = selectedTemplateConfig.supportedSections.filter(sid => !existingIds.has(sid));
+                    const newSectionsToAdd = config.defaultSections.filter(s => missingIds.includes(s.id));
+                    
+                    updateSettings({ 
+                      template: newTemplateId as any,
+                      sectionsOrder: [...supportedPrevSections, ...newSectionsToAdd]
+                    });
+                  } else {
+                    updateSettings({ template: newTemplateId as any });
+                  }
+                  
                   setIsTemplateDialogOpen(false);
                 }} 
               />

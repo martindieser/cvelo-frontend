@@ -130,7 +130,25 @@ const Settings = ({ showContinue = false, onContinue }: SettingsProps) => {
         </div>
 
         <div className="md:col-span-2">
-          <TemplateSelector templates={config.templates} selectedId={template} onSelect={setTemplate} />
+          <TemplateSelector 
+            templates={config.templates} 
+            selectedId={template} 
+            onSelect={(newTemplateId) => {
+              setTemplate(newTemplateId);
+              const selectedTemplateConfig = config.templates.find(t => t.id === newTemplateId);
+              if (selectedTemplateConfig && selectedTemplateConfig.supportedSections) {
+                setSections(prevSections => {
+                  const supportedPrevSections = prevSections.filter(s => 
+                    selectedTemplateConfig.supportedSections.includes(s.id)
+                  );
+                  const existingIds = new Set(supportedPrevSections.map(s => s.id));
+                  const missingIds = selectedTemplateConfig.supportedSections.filter(id => !existingIds.has(id));
+                  const newSectionsToAdd = config.defaultSections.filter(s => missingIds.includes(s.id));
+                  return [...supportedPrevSections, ...newSectionsToAdd];
+                });
+              }
+            }} 
+          />
         </div>
       </div>
 
