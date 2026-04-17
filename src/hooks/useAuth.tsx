@@ -103,8 +103,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(data),
       });
       return response;
-    } catch (err) {
-      throw err; 
     } finally {
       setLoading(false);
     }
@@ -130,8 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("user", JSON.stringify(userVm));
         localStorage.setItem("token", token);
       }
-    } catch (err) {
-      throw err;
     } finally {
       setLoading(false);
     }
