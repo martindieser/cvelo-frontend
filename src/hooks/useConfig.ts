@@ -41,7 +41,7 @@ export const useConfig = () => {
     const fetchConfig = async () => {
       try {
         setLoading(true);
-        const data = await apiCall("/api/config");
+        const data = await apiCall("/config");
         
         if (data) {
           const dto = data as AppConfigDTO;
