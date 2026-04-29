@@ -40,7 +40,7 @@ const HeroSection = () => {
       </div>
 
       {/* Job cards marquee */}
-      <div className="bg-white py-3 mt-12 relative z-30 overflow-hidden border-y border-border">
+{/*      <div className="bg-white py-3 mt-12 relative z-30 overflow-hidden border-y border-border">
         <div className="flex animate-marquee">
           {[...jobCards, ...jobCards, ...jobCards, ...jobCards].map((card, i) => (
             <div key={i} className="flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-2 mx-3 min-w-[220px] shadow-sm">
@@ -54,7 +54,7 @@ const HeroSection = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div>*/}
     </section>
   );
 };
