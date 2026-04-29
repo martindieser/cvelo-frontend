@@ -63,3 +63,10 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
+
+      - name: Trigger Infra Deploy
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GHCR_TOKEN }}
+          repository: martindieser/infra-deploy
+          event-type: deploy_event
